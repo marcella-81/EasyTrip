@@ -1,0 +1,17 @@
+﻿{
+  "name": "easytrip-backend",
+  "version": "1.0.0",
+  "description": "Backend do EasyTrip - Planejador de Viagens",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
