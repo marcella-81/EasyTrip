@@ -1,2 +1,26 @@
+# Dependencies
 node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+apps/backend/public/
+
+# Env
 .env
+**/.env
+
+# Turbo
+.turbo/
+**/.turbo/
+
+# Vite
+apps/frontend/dist/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store

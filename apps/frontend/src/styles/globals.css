@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0e0f14;
+  --color-surface: #16181f;
+  --color-surface2: #1e2029;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-accent: #4f8ef7;
+  --color-accent2: #7dd3fc;
+  --color-foreground: #f0f2f8;
+  --color-muted: #7c8194;
+  --color-success: #34d399;
+
+  --font-sans: "DM Sans", sans-serif;
+  --font-display: "Playfair Display", serif;
+}
+
+:root {
+  --background: 222 14% 7%;
+  --foreground: 230 40% 96%;
+  --card: 225 13% 10%;
+  --card-foreground: 230 40% 96%;
+  --popover: 225 13% 10%;
+  --popover-foreground: 230 40% 96%;
+  --primary: 218 91% 64%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 227 13% 13%;
+  --secondary-foreground: 230 40% 96%;
+  --muted: 227 13% 13%;
+  --muted-foreground: 230 10% 56%;
+  --accent: 218 91% 64%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 100% / 0.07;
+  --input: 0 0% 100% / 0.07;
+  --ring: 218 91% 64%;
+  --radius: 0.75rem;
+}
+
+* {
+  border-color: hsl(var(--border));
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0e0f14;
+  color: #f0f2f8;
+  font-family: "DM Sans", sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.4s ease both;
+}
