@@ -1,17 +1,21 @@
 # EasyTrip
 
-É uma aplicação desenvolvida para crirar seus roteiros de viagens, integrando APIs externas para fornecer informações úteis como clima e câmbio em tempo real.
+Aplicação de planejamento de viagens que fornece informações em tempo real sobre destinos: clima, câmbio e dados do país, integrando APIs externas.
 
+## Stack
 
-## Tecnologias:
+**Monorepo** gerenciado com [Turborepo](https://turbo.build).
 
-* Node.js
-* Express
-* APIs externas (OpenWeather, ExchangeRate)
-* JavaScript
+| Pacote | Tecnologias |
+|--------|-------------|
+| `apps/backend` | NestJS, TypeScript, @nestjs/axios, @nestjs/config |
+| `apps/frontend` | React 19, TypeScript, Vite, TanStack Router, TailwindCSS, shadcn/ui |
 
+**APIs externas:** OpenWeatherMap · RestCountries · ExchangeRate
 
-## Como rodar o projeto localmente
+---
+
+## Como rodar localmente
 
 ### 1. Clone o repositório
 
@@ -20,58 +24,73 @@ git clone https://github.com/marcella-81/EasyTrip.git
 cd EasyTrip
 ```
 
+### 2. Configure as variáveis de ambiente
 
-### 2. Instale as dependências
+Crie `apps/backend/.env`:
+
+```env
+PORT=3000
+OPENWEATHER_API_KEY=sua_chave_aqui
+EXCHANGERATE_API_KEY=sua_chave_aqui
+```
+
+### 3. Instale as dependências
 
 ```bash
 npm install
 ```
 
-
-### 3. Configure as variáveis de ambiente
-
-Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
-
-```env
-OPENWEATHER_API_KEY=sua_chave_aqui
-EXCHANGE_API_KEY=sua_chave_aqui
-```
-
-
-### 4. Execute o projeto
+### 4. Execute em modo desenvolvimento
 
 ```bash
-node src/app.js
+npm run dev
 ```
 
-Se tudo estiver correto, o servidor irá iniciar.
+Isso inicia em paralelo:
+- **Backend** NestJS em `http://localhost:3000`
+- **Frontend** Vite em `http://localhost:5173` (proxy `/api` → `:3000`)
 
 ---
 
-## ⚠️ Problemas comuns
+## Scripts disponíveis
 
-* Erro de API → verifique se o `.env` foi criado corretamente
-* Módulos não encontrados → execute `npm install`
-* Porta em uso → altere a porta no projeto
-
----
-
-## Para Segurança:
-
-As chaves de API não são armazenadas no repositório por motivos de segurança.
-
-Caso alguma chave tenha sido exposta anteriormente:
-
-* Revogue imediatamente
-* Gere uma nova chave
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Backend + frontend em paralelo com hot-reload |
+| `npm run build` | Build de todos os pacotes (com cache Turborepo) |
+| `npm run lint` | Lint em todos os pacotes |
+| `npm run test` | Testes em todos os pacotes |
 
 ---
 
-## Para Contribuição:
+## Estrutura do projeto
 
-1. Faça um fork do projeto
-2. Crie uma branch (`git checkout -b feature/minha-feature`)
-3. Commit suas alterações (`git commit -m 'Minha contribuição'`)
-4. Push para a branch (`git push origin feature/minha-feature`)
-5. Abra um Pull Request
+```
+EasyTrip/
+├── apps/
+│   ├── backend/        NestJS — serve API em /api/destination/:name
+│   └── frontend/       React + Vite — interface do usuário
+├── turbo.json          Pipeline do Turborepo
+└── package.json        Workspaces npm
+```
 
+---
+
+## Variáveis de ambiente
+
+| Variável | Descrição |
+|----------|-----------|
+| `OPENWEATHER_API_KEY` | Chave da [OpenWeatherMap API](https://openweathermap.org/api) |
+| `EXCHANGERATE_API_KEY` | Chave da [ExchangeRate API](https://www.exchangerate-api.com) |
+| `PORT` | Porta do backend (padrão: `3000`) |
+
+As chaves de API não são armazenadas no repositório. Caso alguma tenha sido exposta, revogue imediatamente e gere uma nova.
+
+---
+
+## Contribuição
+
+1. Crie uma branch (`git checkout -b feature/minha-feature`)
+2. Commit suas alterações
+3. Push para a branch (`git push origin feature/minha-feature`)
+4. Abra um Pull Request
