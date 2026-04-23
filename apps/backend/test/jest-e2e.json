@@ -5,5 +5,10 @@
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
-  }
+  },
+  "moduleNameMapper": {
+    "^@easytrip/shared$": "<rootDir>/../../../packages/shared/src/index.ts",
+    "^@easytrip/shared/(.*)$": "<rootDir>/../../../packages/shared/src/$1"
+  },
+  "globalSetup": "<rootDir>/setup-e2e.ts"
 }

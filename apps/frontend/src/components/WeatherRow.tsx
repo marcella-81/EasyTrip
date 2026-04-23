@@ -1,4 +1,4 @@
-import type { WeatherInfo } from '@/types/destination'
+import type { WeatherInfo } from '@easytrip/shared'
 
 const WEATHER_EMOJIS: Record<string, string> = {
   clear: '☀️',

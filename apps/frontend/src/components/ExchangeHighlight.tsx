@@ -1,4 +1,4 @@
-import type { ExchangeInfo } from '@/types/destination'
+import type { ExchangeInfo } from '@easytrip/shared'
 
 interface ExchangeHighlightProps {
   cambio: ExchangeInfo

@@ -1,4 +1,4 @@
-import type { CountryInfo } from '@/types/destination'
+import type { CountryInfo } from '@easytrip/shared'
 
 interface InfoGridProps {
   info: CountryInfo

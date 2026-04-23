@@ -1,11 +1,17 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Check, Heart, Plus } from 'lucide-react'
+import { useMemo } from 'react'
+import type { DestinationResponse } from '@easytrip/shared'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { InfoGrid } from '@/components/InfoGrid'
 import { WeatherRow } from '@/components/WeatherRow'
 import { ExchangeHighlight } from '@/components/ExchangeHighlight'
-import { getCountryFlag } from '@/lib/flags'
-import type { DestinationResponse } from '@/types/destination'
+import { useAuth } from '@/context/AuthContext'
+import { useVisited } from '@/hooks/useVisited'
+import { useWishlist } from '@/hooks/useWishlist'
+import { getCountryCode, getCountryFlag } from '@/lib/flags'
 
 interface DestinationCardProps {
   data: DestinationResponse
@@ -14,11 +20,49 @@ interface DestinationCardProps {
 export function DestinationCard({ data }: DestinationCardProps) {
   const { destino, informacoesDoPais, clima, cambio, geradoEm } = data
   const flag = getCountryFlag(destino)
+  const { isAuthenticated } = useAuth()
+  const wishlist = useWishlist()
+  const visited = useVisited()
+
+  const cca2 = useMemo(() => getCountryCode(destino), [destino])
+  const inWishlist = cca2 ? wishlist.items.some((i) => i.cca2 === cca2) : false
+  const inVisited = cca2 ? visited.items.some((i) => i.cca2 === cca2) : false
+
+  async function toggleWishlist() {
+    if (!cca2) return
+    if (inWishlist) {
+      await wishlist.remove(cca2)
+    } else {
+      await wishlist.add({
+        cca2,
+        countryName: destino,
+        continent: informacoesDoPais.continente,
+      })
+    }
+  }
+
+  async function toggleVisited() {
+    if (!cca2) return
+    if (inVisited) {
+      await visited.remove(cca2)
+    } else {
+      await visited.add({
+        cca2,
+        countryName: destino,
+        continent: informacoesDoPais.continente,
+      })
+    }
+  }
 
   return (
     <Card
       className="animate-fade-up border-0 overflow-hidden"
-      style={{ background: '#16181f', borderColor: 'rgba(255,255,255,0.07)', borderWidth: 1, borderStyle: 'solid' }}
+      style={{
+        background: '#16181f',
+        borderColor: 'rgba(255,255,255,0.07)',
+        borderWidth: 1,
+        borderStyle: 'solid',
+      }}
     >
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-3">
@@ -36,7 +80,10 @@ export function DestinationCard({ data }: DestinationCardProps) {
               >
                 {destino}
               </h2>
-              <p className="text-xs uppercase tracking-widest mt-0.5" style={{ color: '#7c8194' }}>
+              <p
+                className="text-xs uppercase tracking-widest mt-0.5"
+                style={{ color: '#7c8194' }}
+              >
                 {informacoesDoPais.continente}
               </p>
             </div>
@@ -44,7 +91,11 @@ export function DestinationCard({ data }: DestinationCardProps) {
           <Badge
             variant="secondary"
             className="text-xs mt-1 flex-shrink-0"
-            style={{ background: '#1e2029', color: '#7c8194', borderColor: 'rgba(255,255,255,0.07)' }}
+            style={{
+              background: '#1e2029',
+              color: '#7c8194',
+              borderColor: 'rgba(255,255,255,0.07)',
+            }}
           >
             {informacoesDoPais.continente}
           </Badge>
@@ -57,6 +108,34 @@ export function DestinationCard({ data }: DestinationCardProps) {
         <InfoGrid info={informacoesDoPais} />
         <ExchangeHighlight cambio={cambio} />
         <WeatherRow clima={clima} capital={informacoesDoPais.capital} />
+
+        {isAuthenticated && cca2 && (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant={inWishlist ? 'secondary' : 'outline'}
+              onClick={toggleWishlist}
+              className="gap-1 cursor-pointer"
+            >
+              <Heart
+                size={14}
+                fill={inWishlist ? '#f87171' : 'none'}
+                color={inWishlist ? '#f87171' : undefined}
+              />
+              {inWishlist ? 'Na wishlist' : 'Adicionar à wishlist'}
+            </Button>
+            <Button
+              size="sm"
+              variant={inVisited ? 'secondary' : 'outline'}
+              onClick={toggleVisited}
+              className="gap-1 cursor-pointer"
+            >
+              {inVisited ? <Check size={14} /> : <Plus size={14} />}
+              {inVisited ? 'Visitado' : 'Marquei como visitado'}
+            </Button>
+          </div>
+        )}
+
         <p className="text-xs text-right" style={{ color: '#7c8194' }}>
           Atualizado em {geradoEm}
         </p>

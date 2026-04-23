@@ -1,36 +1,92 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import type { SearchHistoryEntry } from '@easytrip/shared'
+import { api } from '@/lib/apiClient'
+import { useAuth } from '@/context/AuthContext'
+import { useLocalHistory } from './useLocalHistory'
 
-const STORAGE_KEY = 'easytrip:search-history'
-const MAX_ITEMS = 8
-
-function load(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
-  } catch {
-    return []
-  }
+interface SearchHistoryHook {
+  history: string[]
+  entries: SearchHistoryEntry[]
+  add: (query: string) => void
+  clear: () => void
+  removeById: (id: string) => void
+  reload: () => void
 }
 
-function save(items: string[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
-}
+export function useSearchHistory(): SearchHistoryHook {
+  const { isAuthenticated, token } = useAuth()
+  const local = useLocalHistory()
+  const [entries, setEntries] = useState<SearchHistoryEntry[]>([])
 
-export function useSearchHistory() {
-  const [history, setHistory] = useState<string[]>(load)
+  const reload = useCallback(async () => {
+    if (!isAuthenticated) {
+      setEntries([])
+      return
+    }
+    try {
+      const list = await api<SearchHistoryEntry[]>('/api/history')
+      setEntries(list)
+    } catch {
+      setEntries([])
+    }
+  }, [isAuthenticated])
 
-  function add(query: string) {
-    setHistory((prev) => {
-      const deduped = [query, ...prev.filter((q) => q.toLowerCase() !== query.toLowerCase())]
-      const next = deduped.slice(0, MAX_ITEMS)
-      save(next)
-      return next
-    })
+  useEffect(() => {
+    reload()
+  }, [reload, token])
+
+  if (!isAuthenticated) {
+    return {
+      history: local.history,
+      entries: [],
+      add: local.add,
+      clear: local.clear,
+      removeById: () => {},
+      reload,
+    }
   }
 
-  function clear() {
-    localStorage.removeItem(STORAGE_KEY)
-    setHistory([])
+  async function add(query: string) {
+    try {
+      const entry = await api<SearchHistoryEntry>('/api/history', {
+        method: 'POST',
+        body: JSON.stringify({ query }),
+      })
+      setEntries((prev) => {
+        const dedup = prev.filter(
+          (p) => p.countryName.toLowerCase() !== entry.countryName.toLowerCase(),
+        )
+        return [entry, ...dedup].slice(0, 8)
+      })
+    } catch {
+      // silenciosamente ignora país não encontrado
+    }
   }
 
-  return { history, add, clear }
+  async function clear() {
+    try {
+      await api('/api/history', { method: 'DELETE' })
+      setEntries([])
+    } catch {
+      // ignore
+    }
+  }
+
+  async function removeById(id: string) {
+    try {
+      await api(`/api/history/${id}`, { method: 'DELETE' })
+      setEntries((prev) => prev.filter((e) => e.id !== id))
+    } catch {
+      // ignore
+    }
+  }
+
+  return {
+    history: entries.map((e) => e.countryName),
+    entries,
+    add,
+    clear,
+    removeById,
+    reload,
+  }
 }
