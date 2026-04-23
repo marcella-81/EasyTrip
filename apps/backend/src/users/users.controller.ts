@@ -1,11 +1,22 @@
 import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { PublicProfile } from '@easytrip/shared';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { PublicProfileDto } from '../common/swagger-responses';
 import { StatsService } from '../stats/stats.service';
 import { VisitedService } from '../visited/visited.service';
 import { WishlistService } from '../wishlist/wishlist.service';
 import { UsersService } from './users.service';
 
+@ApiTags('Users')
+@ApiBearerAuth('jwt')
 @Controller('users')
 @Roles()
 export class UsersController {
@@ -17,6 +28,18 @@ export class UsersController {
   ) {}
 
   @Get(':id/profile')
+  @ApiOperation({
+    summary: 'Perfil público de outro usuário',
+    description:
+      'Qualquer usuário autenticado pode consumir. Contém estatísticas agregadas + listas de wishlist e visitados. Usado pela rota `/profile/:id` do frontend.',
+  })
+  @ApiParam({
+    name: 'id',
+    example: 'cmoc0cudr0000aql4hyofnthb',
+    description: 'ID do usuário alvo',
+  })
+  @ApiOkResponse({ type: PublicProfileDto })
+  @ApiNotFoundResponse({ description: 'Usuário não encontrado' })
   async publicProfile(@Param('id') id: string): Promise<PublicProfile> {
     const user = await this.users.findById(id);
     if (!user) throw new NotFoundException('Usuário não encontrado');

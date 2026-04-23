@@ -1,9 +1,6 @@
 import { Navigate } from '@tanstack/react-router'
-import { Heart, MapPin, TrendingUp } from 'lucide-react'
-import {
-  Avatar,
-  AvatarFallback,
-} from '@/components/ui/avatar'
+import { Globe2, Heart, MapPin, TrendingUp } from 'lucide-react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   Tabs,
   TabsContent,
@@ -11,11 +8,14 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ContinentBarChart } from '@/components/charts/ContinentBarChart'
 import { ContinentStatsCard } from '@/components/ContinentStatsCard'
 import { ProfileHistoryList } from '@/components/ProfileHistoryList'
 import { ShareProfileButton } from '@/components/ShareProfileButton'
 import { VisitedSection } from '@/components/VisitedSection'
 import { WishlistSection } from '@/components/WishlistSection'
+import { WorldMapCard } from '@/components/charts/WorldMapCard'
+import { WorldPercentChart } from '@/components/charts/WorldPercentChart'
 import { useAuth } from '@/context/AuthContext'
 import { useContinentStats } from '@/hooks/useContinentStats'
 import { useVisited } from '@/hooks/useVisited'
@@ -39,9 +39,10 @@ export function ProfilePage() {
   }
 
   const initials = user.email.slice(0, 2).toUpperCase()
+  const totalVisited = stats.data?.totalVisited ?? visited.items.length
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 flex flex-col gap-6">
+    <div className="max-w-5xl mx-auto px-4 py-10 flex flex-col gap-6">
       <Card
         className="border-0"
         style={{
@@ -75,7 +76,7 @@ export function ProfilePage() {
           <QuickStat
             icon={<TrendingUp size={16} color="#7dd3fc" />}
             label="Visitados"
-            value={stats.data?.totalVisited ?? visited.items.length}
+            value={totalVisited}
           />
           <QuickStat
             icon={<Heart size={16} color="#f87171" />}
@@ -92,22 +93,39 @@ export function ProfilePage() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="stats">
+      <Tabs defaultValue="overview">
         <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="stats">Estatísticas</TabsTrigger>
+          <TabsTrigger value="overview" className="gap-1">
+            <Globe2 size={14} /> Visão geral
+          </TabsTrigger>
+          <TabsTrigger value="map">Mapa</TabsTrigger>
           <TabsTrigger value="wishlist">Wishlist</TabsTrigger>
           <TabsTrigger value="visited">Visitados</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
         </TabsList>
-        <TabsContent value="stats">
+
+        <TabsContent value="overview" className="flex flex-col gap-4">
+          <div className="grid gap-4 md:grid-cols-[1fr_1fr]">
+            <WorldPercentChart totalVisited={totalVisited} />
+            {stats.data && (
+              <ContinentBarChart perContinent={stats.data.perContinent} />
+            )}
+          </div>
           <ContinentStatsCard />
         </TabsContent>
+
+        <TabsContent value="map">
+          <WorldMapCard visited={visited.items} />
+        </TabsContent>
+
         <TabsContent value="wishlist">
           <WishlistSection />
         </TabsContent>
+
         <TabsContent value="visited">
           <VisitedSection />
         </TabsContent>
+
         <TabsContent value="history">
           <ProfileHistoryList />
         </TabsContent>
