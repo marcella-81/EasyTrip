@@ -8,6 +8,7 @@ import {
 import type { VisitedCountry } from '@easytrip/shared'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { sameCountry } from '@/lib/countryMatch'
+import { CONTINENT_PT, translateContinent } from '@/lib/i18n'
 
 const GEO_URL = '/countries-110m.json'
 
@@ -71,7 +72,7 @@ export function WorldMapCard({
               className="text-lg font-semibold"
               style={{
                 color: '#f0f2f8',
-                fontFamily: '"Playfair Display", serif',
+                fontFamily: '"Instrument Serif", serif',
               }}
             >
               {heading}
@@ -91,7 +92,7 @@ export function WorldMapCard({
                   className="inline-block w-2 h-2 rounded-full"
                   style={{ background: color }}
                 />
-                {continent}
+                {(CONTINENT_PT as Record<string, string>)[continent] ?? continent}
               </span>
             ))}
           </div>
@@ -173,7 +174,9 @@ export function WorldMapCard({
           >
             <div className="font-medium">{tip.name}</div>
             {tip.continent ? (
-              <div style={{ color: '#7dd3fc' }}>✓ visitado — {tip.continent}</div>
+              <div style={{ color: '#7dd3fc' }}>
+                ✓ visitado — {translateContinent(tip.continent)}
+              </div>
             ) : (
               <div style={{ color: '#7c8194' }}>ainda não visitado</div>
             )}

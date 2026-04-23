@@ -57,7 +57,7 @@ export function ContinentBarChart({ perContinent }: ContinentBarChartProps) {
       <CardHeader>
         <h2
           className="text-lg font-semibold"
-          style={{ color: '#f0f2f8', fontFamily: '"Playfair Display", serif' }}
+          style={{ color: '#f0f2f8', fontFamily: '"Instrument Serif", serif' }}
         >
           Cobertura por continente
         </h2>

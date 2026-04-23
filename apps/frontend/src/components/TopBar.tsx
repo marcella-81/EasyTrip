@@ -37,7 +37,7 @@ export function TopBar() {
           <span
             className="text-lg font-semibold tracking-tight"
             style={{
-              fontFamily: '"Playfair Display", serif',
+              fontFamily: '"Instrument Serif", serif',
               color: '#f0f2f8',
             }}
           >

@@ -44,7 +44,7 @@ export function PublicProfilePage() {
             <h1
               className="text-3xl font-semibold mb-2"
               style={{
-                fontFamily: '"Playfair Display", serif',
+                fontFamily: '"Instrument Serif", serif',
                 color: '#f0f2f8',
               }}
             >
@@ -116,7 +116,7 @@ export function PublicProfilePage() {
             <h1
               className="text-2xl font-semibold"
               style={{
-                fontFamily: '"Playfair Display", serif',
+                fontFamily: '"Instrument Serif", serif',
                 color: '#f0f2f8',
               }}
             >
@@ -133,7 +133,7 @@ export function PublicProfilePage() {
               </span>
               <span>
                 <strong style={{ color: '#f0f2f8' }}>{data.totalWishlist}</strong>{' '}
-                na wishlist
+                nos favoritos
               </span>
             </div>
           </div>
@@ -160,7 +160,7 @@ export function PublicProfilePage() {
           <h2
             className="text-lg font-semibold"
             style={{
-              fontFamily: '"Playfair Display", serif',
+              fontFamily: '"Instrument Serif", serif',
               color: '#f0f2f8',
             }}
           >
@@ -204,17 +204,17 @@ export function PublicProfilePage() {
           <h2
             className="text-lg font-semibold flex items-center gap-2"
             style={{
-              fontFamily: '"Playfair Display", serif',
+              fontFamily: '"Instrument Serif", serif',
               color: '#f0f2f8',
             }}
           >
-            <MapPin size={16} color="#7dd3fc" /> Quero visitar
+            <MapPin size={16} color="#7dd3fc" /> Favoritos
           </h2>
         </CardHeader>
         <CardContent>
           {data.wishlist.length === 0 ? (
             <p className="text-sm" style={{ color: '#7c8194' }}>
-              Wishlist vazia.
+              Sem favoritos ainda.
             </p>
           ) : (
             <div className="flex flex-wrap gap-2">

@@ -32,7 +32,7 @@ export function ContinentStatsCard({ data, heading }: ContinentStatsCardProps = 
       <CardHeader>
         <h2
           className="text-xl font-semibold"
-          style={{ color: '#f0f2f8', fontFamily: '"Playfair Display", serif' }}
+          style={{ color: '#f0f2f8', fontFamily: '"Instrument Serif", serif' }}
         >
           {heading ?? 'Países visitados por continente'}
         </h2>

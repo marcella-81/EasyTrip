@@ -87,7 +87,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn('text-xl font-semibold leading-none', className)}
-    style={{ fontFamily: '"Playfair Display", serif' }}
+    style={{ fontFamily: '"Instrument Serif", serif' }}
     {...props}
   />
 ))
