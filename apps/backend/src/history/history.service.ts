@@ -24,6 +24,9 @@ export class HistoryService {
 
   async addFromQuery(userId: string, query: string): Promise<SearchHistoryEntry> {
     const country = await this.countries.getByName(query);
+    await this.prisma.searchHistory.deleteMany({
+      where: { userId, cca2: country.cca2 },
+    });
     const created = await this.prisma.searchHistory.create({
       data: {
         userId,

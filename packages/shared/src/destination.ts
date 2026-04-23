@@ -5,6 +5,8 @@ export interface CountryInfo {
   codigoMoeda: string;
   populacao: string;
   continente: string;
+  cca2: string;
+  cca3: string;
 }
 
 export interface WeatherInfo {
