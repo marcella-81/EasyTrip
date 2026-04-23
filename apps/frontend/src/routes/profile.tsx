@@ -59,14 +59,19 @@ export function ProfilePage() {
               <h1
                 className="text-2xl font-semibold"
                 style={{
-                  fontFamily: '"Playfair Display", serif',
+                  fontFamily: '"Instrument Serif", serif',
                   color: '#f0f2f8',
                 }}
               >
                 {user.email}
               </h1>
               <p className="text-xs" style={{ color: '#7c8194' }}>
-                Membro {user.role === 'ADMIN' ? 'admin' : 'USER'}
+                Membro desde{' '}
+                {new Date(user.createdAt).toLocaleDateString('pt-BR', {
+                  month: 'long',
+                  year: 'numeric',
+                })}
+                {user.role === 'ADMIN' && ' · administrador'}
               </p>
             </div>
           </div>
@@ -80,7 +85,7 @@ export function ProfilePage() {
           />
           <QuickStat
             icon={<Heart size={16} color="#f87171" />}
-            label="Wishlist"
+            label="Favoritos"
             value={wishlist.items.length}
           />
           <QuickStat
@@ -99,7 +104,7 @@ export function ProfilePage() {
             <Globe2 size={14} /> Visão geral
           </TabsTrigger>
           <TabsTrigger value="map">Mapa</TabsTrigger>
-          <TabsTrigger value="wishlist">Wishlist</TabsTrigger>
+          <TabsTrigger value="wishlist">Favoritos</TabsTrigger>
           <TabsTrigger value="visited">Visitados</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
         </TabsList>
@@ -153,7 +158,7 @@ function QuickStat({
       </div>
       <span
         className="text-2xl font-semibold"
-        style={{ color: '#f0f2f8', fontFamily: '"Playfair Display", serif' }}
+        style={{ color: '#f0f2f8', fontFamily: '"Instrument Serif", serif' }}
       >
         {value}
       </span>

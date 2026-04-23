@@ -14,7 +14,7 @@ export function RegisterPage() {
       >
         <h1
           className="text-2xl font-semibold"
-          style={{ fontFamily: '"Playfair Display", serif', color: '#f0f2f8' }}
+          style={{ fontFamily: '"Instrument Serif", serif', color: '#f0f2f8' }}
         >
           Criar conta
         </h1>

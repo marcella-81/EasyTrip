@@ -76,7 +76,7 @@ export function DestinationCard({ data }: DestinationCardProps) {
             <div>
               <h2
                 className="text-2xl font-semibold leading-tight"
-                style={{ fontFamily: '"Playfair Display", serif', color: '#f0f2f8' }}
+                style={{ fontFamily: '"Instrument Serif", serif', color: '#f0f2f8' }}
               >
                 {destino}
               </h2>
@@ -122,7 +122,7 @@ export function DestinationCard({ data }: DestinationCardProps) {
                 fill={inWishlist ? '#f87171' : 'none'}
                 color={inWishlist ? '#f87171' : undefined}
               />
-              {inWishlist ? 'Na wishlist' : 'Adicionar à wishlist'}
+              {inWishlist ? 'Nos favoritos' : 'Adicionar aos favoritos'}
             </Button>
             <Button
               size="sm"

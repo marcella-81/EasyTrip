@@ -17,9 +17,9 @@ export function WishlistSection() {
       <CardHeader>
         <h3
           className="text-lg font-semibold"
-          style={{ color: '#f0f2f8', fontFamily: '"Playfair Display", serif' }}
+          style={{ color: '#f0f2f8', fontFamily: '"Instrument Serif", serif' }}
         >
-          Quero visitar
+          Favoritos
         </h3>
         <p className="text-xs" style={{ color: '#7c8194' }}>
           {items.length} país{items.length === 1 ? '' : 'es'}

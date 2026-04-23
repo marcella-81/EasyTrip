@@ -17,7 +17,7 @@ export function VisitedSection() {
       <CardHeader>
         <h3
           className="text-lg font-semibold"
-          style={{ color: '#f0f2f8', fontFamily: '"Playfair Display", serif' }}
+          style={{ color: '#f0f2f8', fontFamily: '"Instrument Serif", serif' }}
         >
           Países visitados
         </h3>
