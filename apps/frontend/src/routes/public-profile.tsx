@@ -9,7 +9,10 @@ import {
 import { AuthRequiredDialog } from '@/components/AuthRequiredDialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ContinentBarChart } from '@/components/charts/ContinentBarChart'
 import { ContinentStatsCard } from '@/components/ContinentStatsCard'
+import { WorldMapCard } from '@/components/charts/WorldMapCard'
+import { WorldPercentChart } from '@/components/charts/WorldPercentChart'
 import { useAuth } from '@/context/AuthContext'
 import { usePublicProfile } from '@/hooks/usePublicProfile'
 import { getCountryFlag } from '@/lib/flags'
@@ -89,7 +92,7 @@ export function PublicProfilePage() {
   const initials = data.email.slice(0, 2).toUpperCase()
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10 flex flex-col gap-6">
+    <div className="max-w-5xl mx-auto px-4 py-10 flex flex-col gap-6">
       <Link
         to="/"
         className="inline-flex items-center gap-2 text-sm w-fit"
@@ -136,6 +139,13 @@ export function PublicProfilePage() {
           </div>
         </CardHeader>
       </Card>
+
+      <div className="grid gap-4 md:grid-cols-[1fr_1fr]">
+        <WorldPercentChart totalVisited={data.totalVisited} />
+        <ContinentBarChart perContinent={data.perContinent} />
+      </div>
+
+      <WorldMapCard visited={data.visited} heading="Mapa de viagens" />
 
       <ContinentStatsCard data={data} heading="Pegada global" />
 
