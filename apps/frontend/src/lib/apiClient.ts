@@ -32,18 +32,21 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   const res = await fetch(path, { ...init, headers })
 
-  if (res.status === 401) {
-    clearToken()
-    window.dispatchEvent(new CustomEvent('auth:logout'))
-    throw new ApiError('Sessão expirada', 401)
-  }
-
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
     const msg =
       (body as { message?: string; erro?: string }).message ??
       (body as { message?: string; erro?: string }).erro ??
       `HTTP ${res.status}`
+
+    // 401 em requisição autenticada = sessão expirou.
+    // 401 sem token = credenciais inválidas no login — propaga a mensagem real.
+    if (res.status === 401 && token) {
+      clearToken()
+      window.dispatchEvent(new CustomEvent('auth:logout'))
+      throw new ApiError('Sessão expirada', 401)
+    }
+
     throw new ApiError(msg, res.status)
   }
 
