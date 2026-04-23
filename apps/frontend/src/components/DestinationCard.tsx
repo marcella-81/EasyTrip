@@ -1,5 +1,4 @@
-import { Check, Heart, Plus } from 'lucide-react'
-import { useMemo } from 'react'
+import { Check, Heart, HeartOff, Undo2 } from 'lucide-react'
 import type { DestinationResponse } from '@easytrip/shared'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,7 +10,7 @@ import { ExchangeHighlight } from '@/components/ExchangeHighlight'
 import { useAuth } from '@/context/AuthContext'
 import { useVisited } from '@/hooks/useVisited'
 import { useWishlist } from '@/hooks/useWishlist'
-import { getCountryCode, getCountryFlag } from '@/lib/flags'
+import { getCountryFlag } from '@/lib/flags'
 
 interface DestinationCardProps {
   data: DestinationResponse
@@ -24,8 +23,10 @@ export function DestinationCard({ data }: DestinationCardProps) {
   const wishlist = useWishlist()
   const visited = useVisited()
 
-  const cca2 = useMemo(() => getCountryCode(destino), [destino])
-  const inWishlist = cca2 ? wishlist.items.some((i) => i.cca2 === cca2) : false
+  const cca2 = informacoesDoPais.cca2?.toUpperCase() ?? ''
+  const inWishlist = cca2
+    ? wishlist.items.some((i) => i.cca2 === cca2)
+    : false
   const inVisited = cca2 ? visited.items.some((i) => i.cca2 === cca2) : false
 
   async function toggleWishlist() {
@@ -109,29 +110,45 @@ export function DestinationCard({ data }: DestinationCardProps) {
         <ExchangeHighlight cambio={cambio} />
         <WeatherRow clima={clima} capital={informacoesDoPais.capital} />
 
-        {isAuthenticated && cca2 && (
+        {isAuthenticated && (
           <div className="flex flex-wrap gap-2">
             <Button
               size="sm"
               variant={inWishlist ? 'secondary' : 'outline'}
               onClick={toggleWishlist}
+              disabled={!cca2}
               className="gap-1 cursor-pointer"
             >
-              <Heart
-                size={14}
-                fill={inWishlist ? '#f87171' : 'none'}
-                color={inWishlist ? '#f87171' : undefined}
-              />
-              {inWishlist ? 'Nos favoritos' : 'Adicionar aos favoritos'}
+              {inWishlist ? (
+                <>
+                  <HeartOff size={14} color="#f87171" />
+                  Remover dos favoritos
+                </>
+              ) : (
+                <>
+                  <Heart size={14} />
+                  Adicionar aos favoritos
+                </>
+              )}
             </Button>
             <Button
               size="sm"
               variant={inVisited ? 'secondary' : 'outline'}
               onClick={toggleVisited}
+              disabled={!cca2}
               className="gap-1 cursor-pointer"
             >
-              {inVisited ? <Check size={14} /> : <Plus size={14} />}
-              {inVisited ? 'Visitado' : 'Marquei como visitado'}
+              {inVisited ? (
+                <>
+                  <Undo2 size={14} color="#7c8194" />
+                  Desmarcar como visitado
+                </>
+              ) : (
+                <>
+                  <Check size={14} />
+                  Marcar como visitado
+                </>
+              )}
             </Button>
           </div>
         )}

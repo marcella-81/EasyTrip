@@ -1,16 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class CountryService {
   private readonly baseUrl: string;
 
-  constructor(
-    private readonly http: HttpService,
-    private readonly config: ConfigService,
-  ) {
+  constructor(private readonly http: HttpService) {
     this.baseUrl = 'https://restcountries.com/v3.1';
   }
 
@@ -21,7 +17,9 @@ export class CountryService {
       );
 
       const country = data[0];
-      const currency = Object.values(country.currencies as Record<string, { name: string; symbol: string }>)[0];
+      const currency = Object.values(
+        country.currencies as Record<string, { name: string; symbol: string }>,
+      )[0];
 
       return {
         capital: country.capital?.[0] ?? country.name.common,
@@ -30,6 +28,8 @@ export class CountryService {
         codigoMoeda: Object.keys(country.currencies)[0] as string,
         populacao: (country.population as number).toLocaleString('pt-BR'),
         continente: country.continents[0] as string,
+        cca2: country.cca2 as string,
+        cca3: country.cca3 as string,
       };
     } catch {
       throw new NotFoundException(`País "${countryName}" não encontrado.`);
