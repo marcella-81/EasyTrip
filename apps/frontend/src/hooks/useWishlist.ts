@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { WishlistItem } from '@easytrip/shared'
 import { api } from '@/lib/apiClient'
 import { useAuth } from '@/context/AuthContext'
@@ -10,52 +10,44 @@ interface AddInput {
 }
 
 export function useWishlist() {
-  const { isAuthenticated, token } = useAuth()
-  const [items, setItems] = useState<WishlistItem[]>([])
-  const [loading, setLoading] = useState(false)
+  const { isAuthenticated } = useAuth()
+  const qc = useQueryClient()
 
-  const reload = useCallback(async () => {
-    if (!isAuthenticated) {
-      setItems([])
-      return
-    }
-    setLoading(true)
-    try {
-      const list = await api<WishlistItem[]>('/api/wishlist')
-      setItems(list)
-    } catch {
-      setItems([])
-    } finally {
-      setLoading(false)
-    }
-  }, [isAuthenticated])
+  const query = useQuery<WishlistItem[]>({
+    queryKey: ['wishlist'],
+    queryFn: () => api<WishlistItem[]>('/api/wishlist'),
+    enabled: isAuthenticated,
+  })
 
-  useEffect(() => {
-    reload()
-  }, [reload, token])
-
-  async function add(input: AddInput) {
-    const item = await api<WishlistItem>('/api/wishlist', {
-      method: 'POST',
-      body: JSON.stringify({
-        cca2: input.cca2.toUpperCase(),
-        countryName: input.countryName,
-        continent: input.continent,
+  const addMut = useMutation({
+    mutationFn: (input: AddInput) =>
+      api<WishlistItem>('/api/wishlist', {
+        method: 'POST',
+        body: JSON.stringify({
+          cca2: input.cca2.toUpperCase(),
+          countryName: input.countryName,
+          continent: input.continent,
+        }),
       }),
-    })
-    setItems((prev) => [item, ...prev])
-    return item
-  }
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['wishlist'] })
+      qc.invalidateQueries({ queryKey: ['recommendations'] })
+    },
+  })
 
-  async function remove(cca2: string) {
-    const upper = cca2.toUpperCase()
-    setItems((prev) => prev.filter((i) => i.cca2 !== upper))
-    try {
-      await api(`/api/wishlist/${upper}`, { method: 'DELETE' })
-    } catch {
-      reload()
-    }
-  }
+  const removeMut = useMutation({
+    mutationFn: (cca2: string) =>
+      api(`/api/wishlist/${cca2.toUpperCase()}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['wishlist'] })
+      qc.invalidateQueries({ queryKey: ['recommendations'] })
+    },
+  })
 
-  return { items, loading, add, remove, reload }
+  return {
+    items: query.data ?? [],
+    isLoading: query.isLoading,
+    add: (input: AddInput) => addMut.mutateAsync(input),
+    remove: (cca2: string) => removeMut.mutateAsync(cca2),
+  }
 }

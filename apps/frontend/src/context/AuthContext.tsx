@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type {
   AuthResponse,
   LoginDTO,
@@ -33,12 +34,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setTokenState] = useState<string | null>(() => getToken())
   const [loading, setLoading] = useState<boolean>(true)
+  const qc = useQueryClient()
 
   const handleLogout = useCallback(() => {
     clearToken()
     setTokenState(null)
     setUser(null)
-  }, [])
+    qc.clear()
+  }, [qc])
 
   useEffect(() => {
     async function hydrate() {
@@ -94,8 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setTokenState(res.tokens.accessToken)
       setUser(res.user)
       await migrateLocalHistory()
+      qc.invalidateQueries()
     },
-    [migrateLocalHistory],
+    [migrateLocalHistory, qc],
   )
 
   const login = useCallback(

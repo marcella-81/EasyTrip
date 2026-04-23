@@ -1,6 +1,9 @@
+import type { Role } from './roles';
+
 export interface User {
   id: string;
   email: string;
+  role: Role;
   createdAt: string;
 }
 

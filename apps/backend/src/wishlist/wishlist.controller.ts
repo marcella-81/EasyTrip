@@ -6,17 +6,16 @@ import {
   HttpCode,
   Param,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import type { WishlistItem } from '@easytrip/shared';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthUser } from '../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { AddWishlistDto } from './dto/add-wishlist.dto';
 import { WishlistService } from './wishlist.service';
 
 @Controller('wishlist')
-@UseGuards(JwtAuthGuard)
+@Roles()
 export class WishlistController {
   constructor(private readonly wishlist: WishlistService) {}
 
@@ -35,10 +34,7 @@ export class WishlistController {
 
   @Delete(':cca2')
   @HttpCode(200)
-  async remove(
-    @CurrentUser() user: AuthUser,
-    @Param('cca2') cca2: string,
-  ) {
+  async remove(@CurrentUser() user: AuthUser, @Param('cca2') cca2: string) {
     await this.wishlist.remove(user.id, cca2);
     return { ok: true };
   }

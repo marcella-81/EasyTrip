@@ -1,32 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import type { StatsResponse } from '@easytrip/shared'
 import { api } from '@/lib/apiClient'
 import { useAuth } from '@/context/AuthContext'
 
-export function useContinentStats(dependency: number = 0) {
-  const { isAuthenticated, token } = useAuth()
-  const [data, setData] = useState<StatsResponse | null>(null)
-  const [loading, setLoading] = useState(false)
+export function useContinentStats() {
+  const { isAuthenticated } = useAuth()
+  const query = useQuery<StatsResponse>({
+    queryKey: ['stats'],
+    queryFn: () => api<StatsResponse>('/api/stats/continents'),
+    enabled: isAuthenticated,
+  })
 
-  const reload = useCallback(async () => {
-    if (!isAuthenticated) {
-      setData(null)
-      return
-    }
-    setLoading(true)
-    try {
-      const res = await api<StatsResponse>('/api/stats/continents')
-      setData(res)
-    } catch {
-      setData(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [isAuthenticated])
-
-  useEffect(() => {
-    reload()
-  }, [reload, token, dependency])
-
-  return { data, loading, reload }
+  return {
+    data: query.data ?? null,
+    isLoading: query.isLoading,
+  }
 }

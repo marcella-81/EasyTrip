@@ -1,11 +1,11 @@
-import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import type { AuthResponse, User as SharedUser } from '@easytrip/shared';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { AuthUser } from './decorators/current-user.decorator';
+import { Roles } from './decorators/roles.decorator';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -23,7 +23,7 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
+  @Roles()
   me(@CurrentUser() user: AuthUser): Promise<SharedUser> {
     return this.auth.me(user.id);
   }

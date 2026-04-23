@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { SearchHistoryEntry } from '@easytrip/shared'
 import { api } from '@/lib/apiClient'
 import { useAuth } from '@/context/AuthContext'
@@ -7,86 +7,68 @@ import { useLocalHistory } from './useLocalHistory'
 interface SearchHistoryHook {
   history: string[]
   entries: SearchHistoryEntry[]
+  isLoading: boolean
   add: (query: string) => void
   clear: () => void
   removeById: (id: string) => void
-  reload: () => void
 }
 
 export function useSearchHistory(): SearchHistoryHook {
-  const { isAuthenticated, token } = useAuth()
+  const { isAuthenticated } = useAuth()
   const local = useLocalHistory()
-  const [entries, setEntries] = useState<SearchHistoryEntry[]>([])
+  const qc = useQueryClient()
 
-  const reload = useCallback(async () => {
-    if (!isAuthenticated) {
-      setEntries([])
-      return
-    }
-    try {
-      const list = await api<SearchHistoryEntry[]>('/api/history')
-      setEntries(list)
-    } catch {
-      setEntries([])
-    }
-  }, [isAuthenticated])
+  const { data: entries = [], isLoading } = useQuery<SearchHistoryEntry[]>({
+    queryKey: ['history'],
+    queryFn: () => api<SearchHistoryEntry[]>('/api/history'),
+    enabled: isAuthenticated,
+  })
 
-  useEffect(() => {
-    reload()
-  }, [reload, token])
+  const addMut = useMutation({
+    mutationFn: (query: string) =>
+      api<SearchHistoryEntry>('/api/history', {
+        method: 'POST',
+        body: JSON.stringify({ query }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['history'] })
+      qc.invalidateQueries({ queryKey: ['recommendations'] })
+    },
+  })
+
+  const clearMut = useMutation({
+    mutationFn: () => api('/api/history', { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['history'] })
+      qc.invalidateQueries({ queryKey: ['recommendations'] })
+    },
+  })
+
+  const removeMut = useMutation({
+    mutationFn: (id: string) => api(`/api/history/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['history'] })
+      qc.invalidateQueries({ queryKey: ['recommendations'] })
+    },
+  })
 
   if (!isAuthenticated) {
     return {
       history: local.history,
       entries: [],
+      isLoading: false,
       add: local.add,
       clear: local.clear,
       removeById: () => {},
-      reload,
-    }
-  }
-
-  async function add(query: string) {
-    try {
-      const entry = await api<SearchHistoryEntry>('/api/history', {
-        method: 'POST',
-        body: JSON.stringify({ query }),
-      })
-      setEntries((prev) => {
-        const dedup = prev.filter(
-          (p) => p.countryName.toLowerCase() !== entry.countryName.toLowerCase(),
-        )
-        return [entry, ...dedup].slice(0, 8)
-      })
-    } catch {
-      // silenciosamente ignora país não encontrado
-    }
-  }
-
-  async function clear() {
-    try {
-      await api('/api/history', { method: 'DELETE' })
-      setEntries([])
-    } catch {
-      // ignore
-    }
-  }
-
-  async function removeById(id: string) {
-    try {
-      await api(`/api/history/${id}`, { method: 'DELETE' })
-      setEntries((prev) => prev.filter((e) => e.id !== id))
-    } catch {
-      // ignore
     }
   }
 
   return {
     history: entries.map((e) => e.countryName),
     entries,
-    add,
-    clear,
-    removeById,
-    reload,
+    isLoading,
+    add: (query: string) => addMut.mutate(query),
+    clear: () => clearMut.mutate(),
+    removeById: (id: string) => removeMut.mutate(id),
   }
 }

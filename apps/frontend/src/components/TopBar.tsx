@@ -1,5 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
-import { LogOut, User as UserIcon } from 'lucide-react'
+import { LogOut, Plane } from 'lucide-react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/AuthContext'
 
@@ -12,6 +13,8 @@ export function TopBar() {
     navigate({ to: '/' })
   }
 
+  const initials = user?.email.slice(0, 2).toUpperCase() ?? '??'
+
   return (
     <header
       className="sticky top-0 z-10 border-b"
@@ -23,14 +26,19 @@ export function TopBar() {
     >
       <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <span className="text-xl">✈️</span>
-          <span
-            className="text-lg font-semibold"
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
             style={{
               background: 'linear-gradient(135deg, #4f8ef7, #7dd3fc)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+            }}
+          >
+            <Plane size={16} color="#0e0f14" />
+          </div>
+          <span
+            className="text-lg font-semibold tracking-tight"
+            style={{
+              fontFamily: '"Playfair Display", serif',
+              color: '#f0f2f8',
             }}
           >
             EasyTrip
@@ -39,16 +47,16 @@ export function TopBar() {
         <nav className="flex items-center gap-2">
           {isAuthenticated ? (
             <>
-              <Link to="/profile">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-2"
+              <Link to="/profile" className="flex items-center gap-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                </Avatar>
+                <span
+                  className="text-sm hidden sm:inline"
                   style={{ color: '#f0f2f8' }}
                 >
-                  <UserIcon size={14} />
-                  <span className="hidden sm:inline">{user?.email}</span>
-                </Button>
+                  {user?.email.split('@')[0]}
+                </span>
               </Link>
               <Button
                 variant="ghost"
@@ -58,7 +66,7 @@ export function TopBar() {
                 style={{ color: '#7c8194' }}
               >
                 <LogOut size={14} />
-                Sair
+                <span className="hidden sm:inline">Sair</span>
               </Button>
             </>
           ) : (

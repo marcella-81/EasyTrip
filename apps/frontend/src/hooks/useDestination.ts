@@ -1,40 +1,37 @@
 import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import type { DestinationResponse } from '@easytrip/shared'
+import { ApiError } from '@/lib/apiClient'
 
-interface HookState {
-  data: DestinationResponse | null
-  loading: boolean
-  error: string | null
+async function fetchDestination(name: string): Promise<DestinationResponse> {
+  const res = await fetch(`/api/destination/${encodeURIComponent(name.trim())}`)
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new ApiError(
+      (body as { erro?: string }).erro ?? 'Destino não encontrado.',
+      res.status,
+    )
+  }
+  return res.json()
 }
 
 export function useDestination() {
-  const [state, setState] = useState<HookState>({
-    data: null,
-    loading: false,
-    error: null,
+  const [data, setData] = useState<DestinationResponse | null>(null)
+  const mutation = useMutation({
+    mutationFn: fetchDestination,
+    onSuccess: (res) => setData(res),
   })
 
-  async function search(destination: string) {
+  function search(destination: string) {
     if (!destination.trim()) return
-
-    setState({ data: null, loading: true, error: null })
-
-    try {
-      const res = await fetch(`/api/destination/${encodeURIComponent(destination.trim())}`)
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error((body as { erro?: string })?.erro ?? 'Destino não encontrado.')
-      }
-      const data: DestinationResponse = await res.json()
-      setState({ data, loading: false, error: null })
-    } catch (err) {
-      setState({
-        data: null,
-        loading: false,
-        error: err instanceof Error ? err.message : 'Erro ao buscar destino.',
-      })
-    }
+    setData(null)
+    mutation.mutate(destination)
   }
 
-  return { ...state, search }
+  return {
+    data,
+    loading: mutation.isPending,
+    error: mutation.error instanceof Error ? mutation.error.message : null,
+    search,
+  }
 }

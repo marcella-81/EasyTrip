@@ -1,16 +1,13 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { ReactNode } from 'react'
-import { AuthProvider, useAuth } from './AuthContext'
+import { useAuth } from './AuthContext'
+import { Wrapper as wrapper } from '@/test/renderWithProviders'
 import { mockFetch } from '@/test/mockFetch'
-
-function wrapper({ children }: { children: ReactNode }) {
-  return <AuthProvider>{children}</AuthProvider>
-}
 
 const USER = {
   id: 'u1',
   email: 'a@b.com',
+  role: 'USER',
   createdAt: '2026-04-23T00:00:00Z',
 }
 

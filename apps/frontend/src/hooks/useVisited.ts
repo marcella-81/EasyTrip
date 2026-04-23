@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { VisitedCountry } from '@easytrip/shared'
 import { api } from '@/lib/apiClient'
 import { useAuth } from '@/context/AuthContext'
@@ -10,52 +10,46 @@ interface AddInput {
 }
 
 export function useVisited() {
-  const { isAuthenticated, token } = useAuth()
-  const [items, setItems] = useState<VisitedCountry[]>([])
-  const [loading, setLoading] = useState(false)
+  const { isAuthenticated } = useAuth()
+  const qc = useQueryClient()
 
-  const reload = useCallback(async () => {
-    if (!isAuthenticated) {
-      setItems([])
-      return
-    }
-    setLoading(true)
-    try {
-      const list = await api<VisitedCountry[]>('/api/visited')
-      setItems(list)
-    } catch {
-      setItems([])
-    } finally {
-      setLoading(false)
-    }
-  }, [isAuthenticated])
+  const query = useQuery<VisitedCountry[]>({
+    queryKey: ['visited'],
+    queryFn: () => api<VisitedCountry[]>('/api/visited'),
+    enabled: isAuthenticated,
+  })
 
-  useEffect(() => {
-    reload()
-  }, [reload, token])
-
-  async function add(input: AddInput) {
-    const item = await api<VisitedCountry>('/api/visited', {
-      method: 'POST',
-      body: JSON.stringify({
-        cca2: input.cca2.toUpperCase(),
-        countryName: input.countryName,
-        continent: input.continent,
+  const addMut = useMutation({
+    mutationFn: (input: AddInput) =>
+      api<VisitedCountry>('/api/visited', {
+        method: 'POST',
+        body: JSON.stringify({
+          cca2: input.cca2.toUpperCase(),
+          countryName: input.countryName,
+          continent: input.continent,
+        }),
       }),
-    })
-    setItems((prev) => [item, ...prev])
-    return item
-  }
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['visited'] })
+      qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['recommendations'] })
+    },
+  })
 
-  async function remove(cca2: string) {
-    const upper = cca2.toUpperCase()
-    setItems((prev) => prev.filter((i) => i.cca2 !== upper))
-    try {
-      await api(`/api/visited/${upper}`, { method: 'DELETE' })
-    } catch {
-      reload()
-    }
-  }
+  const removeMut = useMutation({
+    mutationFn: (cca2: string) =>
+      api(`/api/visited/${cca2.toUpperCase()}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['visited'] })
+      qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['recommendations'] })
+    },
+  })
 
-  return { items, loading, add, remove, reload }
+  return {
+    items: query.data ?? [],
+    isLoading: query.isLoading,
+    add: (input: AddInput) => addMut.mutateAsync(input),
+    remove: (cca2: string) => removeMut.mutateAsync(cca2),
+  }
 }

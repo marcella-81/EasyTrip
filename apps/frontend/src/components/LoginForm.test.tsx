@@ -1,12 +1,13 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { AuthProvider } from '@/context/AuthContext'
 import { LoginForm } from './LoginForm'
+import { renderWithProviders } from '@/test/renderWithProviders'
 import { mockFetch } from '@/test/mockFetch'
 
 const USER = {
   id: 'u1',
   email: 'a@b.com',
+  role: 'USER',
   createdAt: '2026-04-23T00:00:00Z',
 }
 
@@ -20,11 +21,7 @@ describe('LoginForm', () => {
         body: { user: USER, tokens: { accessToken: 't' } },
       },
     })
-    render(
-      <AuthProvider>
-        <LoginForm onSuccess={onSuccess} />
-      </AuthProvider>,
-    )
+    renderWithProviders(<LoginForm onSuccess={onSuccess} />)
     fireEvent.change(screen.getByLabelText(/Email/i), {
       target: { value: 'a@b.com' },
     })
@@ -43,11 +40,7 @@ describe('LoginForm', () => {
   it('bloqueia submit com senha curta', async () => {
     const onSuccess = vi.fn()
     mockFetch({})
-    render(
-      <AuthProvider>
-        <LoginForm onSuccess={onSuccess} />
-      </AuthProvider>,
-    )
+    renderWithProviders(<LoginForm onSuccess={onSuccess} />)
     fireEvent.change(screen.getByLabelText(/Email/i), {
       target: { value: 'a@b.com' },
     })
