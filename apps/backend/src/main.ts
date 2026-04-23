@@ -1,12 +1,21 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Request, Response, NextFunction } from 'express';
 import { existsSync } from 'fs';
+import { join } from 'path';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   app.setGlobalPrefix('api');
 
@@ -14,7 +23,6 @@ async function bootstrap() {
   if (existsSync(publicDir)) {
     app.useStaticAssets(publicDir);
 
-    // SPA fallback: non-API routes serve index.html
     app.use((req: Request, res: Response, next: NextFunction) => {
       if (req.path.startsWith('/api')) return next();
       const indexPath = join(publicDir, 'index.html');

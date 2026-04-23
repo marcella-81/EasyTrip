@@ -6,7 +6,10 @@ import path from 'path'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
-    alias: { '@': path.resolve(__dirname, './src') },
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@easytrip/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
+    },
   },
   build: {
     outDir: '../backend/public',

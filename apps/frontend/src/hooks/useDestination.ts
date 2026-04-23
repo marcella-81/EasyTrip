@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { DestinationResponse } from '@/types/destination'
+import type { DestinationResponse } from '@easytrip/shared'
 
 interface HookState {
   data: DestinationResponse | null
