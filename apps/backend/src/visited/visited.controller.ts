@@ -6,17 +6,16 @@ import {
   HttpCode,
   Param,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import type { VisitedCountry as SharedVisitedCountry } from '@easytrip/shared';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthUser } from '../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { AddVisitedDto } from './dto/add-visited.dto';
 import { VisitedService } from './visited.service';
 
 @Controller('visited')
-@UseGuards(JwtAuthGuard)
+@Roles()
 export class VisitedController {
   constructor(private readonly visited: VisitedService) {}
 
@@ -35,10 +34,7 @@ export class VisitedController {
 
   @Delete(':cca2')
   @HttpCode(200)
-  async remove(
-    @CurrentUser() user: AuthUser,
-    @Param('cca2') cca2: string,
-  ) {
+  async remove(@CurrentUser() user: AuthUser, @Param('cca2') cca2: string) {
     await this.visited.remove(user.id, cca2);
     return { ok: true };
   }

@@ -1,12 +1,13 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { AuthProvider } from '@/context/AuthContext'
 import { ContinentStatsCard } from './ContinentStatsCard'
+import { renderWithProviders } from '@/test/renderWithProviders'
 import { mockFetch } from '@/test/mockFetch'
 
 const ME = {
   id: 'u1',
   email: 'a@b.com',
+  role: 'USER',
   createdAt: '2026-04-23T00:00:00Z',
 }
 
@@ -34,11 +35,7 @@ describe('ContinentStatsCard', () => {
       'GET /api/stats/continents': { body: STATS },
     })
 
-    render(
-      <AuthProvider>
-        <ContinentStatsCard />
-      </AuthProvider>,
-    )
+    renderWithProviders(<ContinentStatsCard />)
 
     await waitFor(() => {
       expect(screen.getByText(/Total: 10/)).toBeInTheDocument()

@@ -1,12 +1,12 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import type { StatsResponse } from '@easytrip/shared';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthUser } from '../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { StatsService } from './stats.service';
 
 @Controller('stats')
-@UseGuards(JwtAuthGuard)
+@Roles()
 export class StatsController {
   constructor(private readonly stats: StatsService) {}
 

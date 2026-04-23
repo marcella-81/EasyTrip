@@ -12,7 +12,7 @@ import { useSearchHistory } from '@/hooks/useSearchHistory'
 export function HomePage() {
   const { data, loading, error, search } = useDestination()
   const { history, add, clear } = useSearchHistory()
-  const { items: recs } = useRecommendations(history.length)
+  const { items: recs } = useRecommendations()
 
   function handleSearch(query: string) {
     add(query)

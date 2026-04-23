@@ -13,6 +13,7 @@ export default defineConfig({
         '../../packages/shared/src/index.ts',
       ),
     },
+    dedupe: ['react', 'react-dom', '@tanstack/react-query'],
   },
   test: {
     environment: 'jsdom',

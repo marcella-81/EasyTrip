@@ -1,3 +1,4 @@
+import type { StatsPerContinent } from '@easytrip/shared'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useContinentStats } from '@/hooks/useContinentStats'
 
@@ -11,8 +12,14 @@ const CONTINENT_LABEL_PT: Record<string, string> = {
   'South America': 'América do Sul',
 }
 
-export function ContinentStatsCard() {
-  const { data, loading } = useContinentStats()
+interface ContinentStatsCardProps {
+  data?: { totalVisited: number; perContinent: StatsPerContinent[] } | null
+  heading?: string
+}
+
+export function ContinentStatsCard({ data, heading }: ContinentStatsCardProps = {}) {
+  const self = useContinentStats()
+  const stats = data ?? self.data
 
   return (
     <Card
@@ -27,15 +34,17 @@ export function ContinentStatsCard() {
           className="text-xl font-semibold"
           style={{ color: '#f0f2f8', fontFamily: '"Playfair Display", serif' }}
         >
-          Países visitados por continente
+          {heading ?? 'Países visitados por continente'}
         </h2>
         <p className="text-xs" style={{ color: '#7c8194' }}>
-          Total: {data?.totalVisited ?? 0}
+          Total: {stats?.totalVisited ?? 0}
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        {loading && <p style={{ color: '#7c8194' }}>Carregando...</p>}
-        {data?.perContinent.map((row) => (
+        {!stats && self.isLoading && (
+          <p style={{ color: '#7c8194' }}>Carregando...</p>
+        )}
+        {stats?.perContinent.map((row) => (
           <div key={row.continent} className="flex flex-col gap-1">
             <div className="flex items-center justify-between text-xs">
               <span style={{ color: '#f0f2f8' }}>

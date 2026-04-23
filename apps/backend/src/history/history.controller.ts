@@ -6,18 +6,17 @@ import {
   HttpCode,
   Param,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import type { SearchHistoryEntry } from '@easytrip/shared';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthUser } from '../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { AddHistoryDto } from './dto/add-history.dto';
 import { BulkHistoryDto } from './dto/bulk-history.dto';
 import { HistoryService } from './history.service';
 
 @Controller('history')
-@UseGuards(JwtAuthGuard)
+@Roles()
 export class HistoryController {
   constructor(private readonly history: HistoryService) {}
 
@@ -51,10 +50,7 @@ export class HistoryController {
 
   @Delete(':id')
   @HttpCode(200)
-  async remove(
-    @CurrentUser() user: AuthUser,
-    @Param('id') id: string,
-  ) {
+  async remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     await this.history.deleteById(user.id, id);
     return { ok: true };
   }

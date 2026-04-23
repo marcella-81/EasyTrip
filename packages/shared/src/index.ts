@@ -1,4 +1,5 @@
 export * from './auth';
+export * from './roles';
 export * from './destination';
 export * from './history';
 export * from './wishlist';
@@ -6,4 +7,5 @@ export * from './visited';
 export * from './recommendations';
 export * from './stats';
 export * from './continents';
+export * from './profile';
 export * from './schemas';

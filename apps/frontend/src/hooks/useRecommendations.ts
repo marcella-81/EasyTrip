@@ -1,32 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import type { RecommendationItem } from '@easytrip/shared'
 import { api } from '@/lib/apiClient'
 import { useAuth } from '@/context/AuthContext'
 
-export function useRecommendations(historyKey: number = 0) {
-  const { isAuthenticated, token } = useAuth()
-  const [items, setItems] = useState<RecommendationItem[]>([])
-  const [loading, setLoading] = useState(false)
+export function useRecommendations() {
+  const { isAuthenticated } = useAuth()
+  const query = useQuery<RecommendationItem[]>({
+    queryKey: ['recommendations'],
+    queryFn: () => api<RecommendationItem[]>('/api/recommendations'),
+    enabled: isAuthenticated,
+  })
 
-  const reload = useCallback(async () => {
-    if (!isAuthenticated) {
-      setItems([])
-      return
-    }
-    setLoading(true)
-    try {
-      const list = await api<RecommendationItem[]>('/api/recommendations')
-      setItems(list)
-    } catch {
-      setItems([])
-    } finally {
-      setLoading(false)
-    }
-  }, [isAuthenticated])
-
-  useEffect(() => {
-    reload()
-  }, [reload, token, historyKey])
-
-  return { items, loading, reload }
+  return {
+    items: query.data ?? [],
+    isLoading: query.isLoading,
+  }
 }

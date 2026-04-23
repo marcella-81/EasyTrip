@@ -1,12 +1,12 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import type { RecommendationItem } from '@easytrip/shared';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthUser } from '../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { RecommendationsService } from './recommendations.service';
 
 @Controller('recommendations')
-@UseGuards(JwtAuthGuard)
+@Roles()
 export class RecommendationsController {
   constructor(private readonly service: RecommendationsService) {}
 

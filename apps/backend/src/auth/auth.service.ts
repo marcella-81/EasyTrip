@@ -4,9 +4,16 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import type { AuthResponse, Role, User as SharedUser } from '@easytrip/shared';
 import * as bcrypt from 'bcrypt';
-import { AuthResponse, User as SharedUser } from '@easytrip/shared';
 import { UsersService } from '../users/users.service';
+
+interface UserRow {
+  id: string;
+  email: string;
+  role: Role;
+  createdAt: Date;
+}
 
 @Injectable()
 export class AuthService {
@@ -45,11 +52,7 @@ export class AuthService {
     return this.toPublic(user);
   }
 
-  private buildResponse(user: {
-    id: string;
-    email: string;
-    createdAt: Date;
-  }): AuthResponse {
+  private buildResponse(user: UserRow): AuthResponse {
     const accessToken = this.jwt.sign({ sub: user.id, email: user.email });
     return {
       user: this.toPublic(user),
@@ -57,14 +60,11 @@ export class AuthService {
     };
   }
 
-  private toPublic(user: {
-    id: string;
-    email: string;
-    createdAt: Date;
-  }): SharedUser {
+  private toPublic(user: UserRow): SharedUser {
     return {
       id: user.id,
       email: user.email,
+      role: user.role,
       createdAt: user.createdAt.toISOString(),
     };
   }
