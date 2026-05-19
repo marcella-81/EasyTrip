@@ -13,12 +13,17 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const { register } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem')
+      return
+    }
     const parsed = registerSchema.safeParse({ email, password })
     if (!parsed.success) {
       setError('Email inválido ou senha precisa ter 6+ caracteres')
@@ -67,6 +72,24 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
+          minLength={6}
+          required
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label
+          htmlFor="register-confirm-password"
+          className="text-xs uppercase tracking-wider"
+          style={{ color: '#7c8194' }}
+        >
+          Confirmar senha
+        </label>
+        <Input
+          id="register-confirm-password"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           autoComplete="new-password"
           minLength={6}
           required
