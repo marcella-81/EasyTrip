@@ -10,6 +10,13 @@ export interface CountryMeta {
   region: string;
   subregion: string;
   borders: string[];
+  latlng: [number, number];
+  landlocked: boolean;
+  languages: string[];
+  currencies: string[];
+  population: number;
+  area: number;
+  flag: string;
 }
 
 interface RestCountry {
@@ -20,19 +27,49 @@ interface RestCountry {
   region: string;
   subregion?: string;
   borders?: string[];
+  latlng?: number[];
+  landlocked?: boolean;
+  languages?: Record<string, string>;
+  currencies?: Record<string, { name?: string; symbol?: string }>;
+  population?: number;
+  area?: number;
+  flags?: { svg?: string; png?: string };
 }
 
 @Injectable()
 export class CountriesService {
   private readonly baseUrl = 'https://restcountries.com/v3.1';
-  private readonly fields = 'cca2,cca3,name,continents,region,subregion,borders';
+  private readonly fields =
+    'cca2,cca3,name,continents,region,subregion,borders,latlng,landlocked,languages,currencies,population,area,flags';
 
   private readonly byCca2 = new Map<string, CountryMeta>();
   private readonly byCca3 = new Map<string, CountryMeta>();
   private readonly byNameLower = new Map<string, CountryMeta>();
   private readonly bySubregion = new Map<string, CountryMeta[]>();
+  private allLoaded = false;
 
   constructor(private readonly http: HttpService) {}
+
+  async loadAll(): Promise<void> {
+    if (this.allLoaded) return;
+    try {
+      const { data } = await firstValueFrom(
+        this.http.get<RestCountry[]>(
+          `${this.baseUrl}/all?fields=${this.fields}`,
+        ),
+      );
+      for (const raw of data) {
+        this.cache(raw);
+      }
+      this.allLoaded = true;
+    } catch {
+      // best effort: continua sem o cache completo
+    }
+  }
+
+  getAll(): CountryMeta[] {
+    return Array.from(this.byCca2.values());
+  }
 
   async getByName(name: string): Promise<CountryMeta> {
     const lower = name.toLowerCase().trim();
@@ -119,6 +156,13 @@ export class CountriesService {
       region: raw.region ?? '',
       subregion: raw.subregion ?? '',
       borders: raw.borders ?? [],
+      latlng: [raw.latlng?.[0] ?? 0, raw.latlng?.[1] ?? 0] as [number, number],
+      landlocked: raw.landlocked ?? false,
+      languages: raw.languages ? Object.values(raw.languages) : [],
+      currencies: raw.currencies ? Object.keys(raw.currencies) : [],
+      population: raw.population ?? 0,
+      area: raw.area ?? 0,
+      flag: raw.flags?.svg ?? raw.flags?.png ?? '',
     };
     this.byCca2.set(meta.cca2, meta);
     this.byCca3.set(meta.cca3, meta);

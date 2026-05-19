@@ -26,6 +26,13 @@ describe('History (e2e)', () => {
         region: 'Europe',
         subregion: 'Southern Europe',
         borders: [],
+        latlng: [40, -4] as [number, number],
+        landlocked: false,
+        languages: ['Spanish'],
+        currencies: ['EUR'],
+        population: 47_000_000,
+        area: 505_000,
+        flag: '',
       };
     });
   });

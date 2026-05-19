@@ -28,3 +28,14 @@ export interface DestinationResponse {
   cambio: ExchangeInfo;
   geradoEm: string;
 }
+
+export interface SemanticSearchResult {
+  cca2: string;
+  cca3: string;
+  name: string;
+  flag: string;
+  continent: string;
+  subregion: string;
+  matchedTags: string[];
+  score: number;
+}
