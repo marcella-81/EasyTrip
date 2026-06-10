@@ -24,3 +24,7 @@ apps/frontend/dist/
 
 # OS
 .DS_Store
+
+# Interno / não commitar
+NEXT_STEPS.md
+.claude/

@@ -12,8 +12,12 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "test:watch": "turbo test:watch",
-    "db:up": "docker compose up -d postgres postgres-test",
-    "db:down": "docker compose down"
+    "backend:up": "docker compose up -d --build backend",
+    "backend:down": "docker compose down",
+    "backend:logs": "docker compose logs -f backend",
+    "backend:rebuild": "docker compose up -d --build --force-recreate backend",
+    "db:test:up": "docker compose --profile test up -d postgres-test",
+    "db:test:down": "docker compose --profile test down"
   },
   "devDependencies": {
     "turbo": "^2.5.4"

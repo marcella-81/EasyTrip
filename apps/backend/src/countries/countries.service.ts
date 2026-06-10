@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 
 export interface CountryMeta {
@@ -38,6 +38,7 @@ interface RestCountry {
 
 @Injectable()
 export class CountriesService {
+  private readonly logger = new Logger(CountriesService.name);
   private readonly baseUrl = 'https://restcountries.com/v3.1';
   private readonly fields =
     'cca2,cca3,name,continents,region,subregion,borders,latlng,landlocked,languages,currencies,population,area,flags';
@@ -61,9 +62,10 @@ export class CountriesService {
       for (const raw of data) {
         this.cache(raw);
       }
+      this.logger.log(`${data.length} países carregados do RestCountries`);
       this.allLoaded = true;
-    } catch {
-      // best effort: continua sem o cache completo
+    } catch (err) {
+      this.logger.error('Falha ao carregar países do RestCountries', err);
     }
   }
 
@@ -125,8 +127,7 @@ export class CountriesService {
       return this.cache(first);
     } catch {
       return null;
-    }
-  }
+    }}
 
   async getBySubregion(subregion: string): Promise<CountryMeta[]> {
     if (!subregion) return [];

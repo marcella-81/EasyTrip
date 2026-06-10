@@ -6,9 +6,10 @@ import { CountryService } from './services/country.service';
 import { WeatherService } from './services/weather.service';
 import { ExchangeService } from './services/exchange.service';
 import { SemanticSearchService } from '../semantic-search/semantic-search.service';
+import { CountriesModule } from '../countries/countries.module';
 
 @Module({
-  imports: [HttpModule],
+  imports: [HttpModule, CountriesModule],
   controllers: [DestinationController],
   providers: [
     DestinationService,

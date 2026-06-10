@@ -25,8 +25,13 @@ interface KeywordEntry {
 
 // ---------- Helpers ----------
 const lat = (m: { latlng: [number, number] }) => m.latlng[0];
-const isSouthernHemisphere = (m: { latlng: [number, number] }) => lat(m) < 0;
-const isNorthernHemisphere = (m: { latlng: [number, number] }) => lat(m) > 0;
+// Países sem dado geográfico são mapeados para [0,0] — excluir de filtros lat-based
+const hasCoords = (m: { latlng: [number, number] }) =>
+  !(m.latlng[0] === 0 && m.latlng[1] === 0);
+const isSouthernHemisphere = (m: { latlng: [number, number] }) =>
+  hasCoords(m) && lat(m) < 0;
+const isNorthernHemisphere = (m: { latlng: [number, number] }) =>
+  hasCoords(m) && lat(m) > 0;
 
 // ---------- Keyword Map ----------
 export const keywordMap: KeywordEntry[] = [
@@ -37,7 +42,7 @@ export const keywordMap: KeywordEntry[] = [
       'pais frio', 'país frio', 'paises frios', 'países frios',
       'cold country', 'cold countries',
     ],
-    filter: (m) => Math.abs(lat(m)) > 50,
+    filter: (m) => hasCoords(m) && Math.abs(lat(m)) > 50,
     tag: 'Frio',
     score: 10,
   },
@@ -48,7 +53,7 @@ export const keywordMap: KeywordEntry[] = [
     ],
     filter: (m) => {
       const a = Math.abs(lat(m));
-      return a >= 35 && a <= 50;
+      return hasCoords(m) && a >= 35 && a <= 50;
     },
     tag: 'Clima ameno',
     score: 10,
@@ -58,7 +63,7 @@ export const keywordMap: KeywordEntry[] = [
       'quente', 'hot', 'warm', 'calor', 'caloroso', 'warm country',
       'pais quente', 'país quente', 'paises quentes', 'países quentes',
     ],
-    filter: (m) => Math.abs(lat(m)) < 25,
+    filter: (m) => hasCoords(m) && Math.abs(lat(m)) < 25,
     tag: 'Quente',
     score: 10,
   },
@@ -66,7 +71,7 @@ export const keywordMap: KeywordEntry[] = [
     keywords: [
       'tropical', 'tropico', 'trópico', 'tropical country', 'tropical countries',
     ],
-    filter: (m) => Math.abs(lat(m)) <= 23.5,
+    filter: (m) => hasCoords(m) && Math.abs(lat(m)) <= 23.5,
     tag: 'Tropical',
     score: 12,
   },
@@ -76,7 +81,7 @@ export const keywordMap: KeywordEntry[] = [
       'regiao polar', 'região polar', 'polo norte', 'polo sul',
       'north pole', 'south pole',
     ],
-    filter: (m) => Math.abs(lat(m)) >= 66.5,
+    filter: (m) => hasCoords(m) && Math.abs(lat(m)) >= 66.5,
     tag: 'Polar',
     score: 15,
   },

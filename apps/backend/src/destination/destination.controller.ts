@@ -11,21 +11,6 @@ export class DestinationController {
     private readonly semanticSearchService: SemanticSearchService,
   ) {}
 
-  @Get(':name')
-  @ApiOperation({
-    summary: 'Retorna informações agregadas de um destino',
-    description:
-      'Endpoint público. Agrega RestCountries (capital, idioma, moeda, população, continente), OpenWeatherMap (clima da capital) e ExchangeRate (conversão para BRL).',
-  })
-  @ApiParam({
-    name: 'name',
-    example: 'Brazil',
-    description: 'Nome do país em inglês (ou formato aceito pelo RestCountries)',
-  })
-  getDestination(@Param('name') name: string) {
-    return this.destinationService.getDestination(name);
-  }
-
   @Get('search')
   @ApiOperation({
     summary: 'Busca semântica de países por atributos',
@@ -39,5 +24,20 @@ export class DestinationController {
   })
   semanticSearch(@Query('q') q: string) {
     return this.semanticSearchService.search(q);
+  }
+
+  @Get(':name')
+  @ApiOperation({
+    summary: 'Retorna informações agregadas de um destino',
+    description:
+      'Endpoint público. Agrega RestCountries (capital, idioma, moeda, população, continente), OpenWeatherMap (clima da capital) e ExchangeRate (conversão para BRL).',
+  })
+  @ApiParam({
+    name: 'name',
+    example: 'Brazil',
+    description: 'Nome do país em inglês (ou formato aceito pelo RestCountries)',
+  })
+  getDestination(@Param('name') name: string) {
+    return this.destinationService.getDestination(name);
   }
 }

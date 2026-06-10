@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CountryMeta, CountriesService } from '../countries/countries.service';
 import {
   keywordMap,
@@ -19,11 +19,18 @@ export interface SemanticSearchResult {
 
 @Injectable()
 export class SemanticSearchService {
+  private readonly logger = new Logger(SemanticSearchService.name);
+
   constructor(private readonly countries: CountriesService) {}
 
   async search(query: string): Promise<SemanticSearchResult[]> {
     await this.countries.loadAll();
     const all = this.countries.getAll();
+
+    if (all.length === 0) {
+      this.logger.warn('getAll() retornou vazio — loadAll() pode ter falhado');
+    }
+
     const lowerQuery = normalizeText(query);
     const words = removeStopwords(query);
 
@@ -35,21 +42,22 @@ export class SemanticSearchService {
       }),
     );
 
-    // 2. Se não achou frase, tentar match por palavras individuais
+    // 2. Complementar com match por palavras individuais (sem duplicar entradas)
     const wordMatches = keywordMap.filter((entry) =>
       words.some((word) =>
         entry.keywords.some((k) => normalizeText(k).includes(word)),
       ),
     );
 
-    const allFilters = [...matchedEntries, ...wordMatches];
+    // Set elimina entradas duplicadas entre matchedEntries e wordMatches
+    const allFilters = [...new Set([...matchedEntries, ...wordMatches])];
 
     if (allFilters.length === 0) {
-      // Fallback: busca por substring no nome do país
+      this.logger.debug(`Nenhum filtro para query "${query}", usando fallback por nome`);
       return this.fallbackNameSearch(all, lowerQuery);
     }
 
-    // 3. Aplicar filtros com lógica AND (todos os filtros devem passar)
+    // 3. Lógica AND: país deve passar em TODOS os filtros matched
     const results: SemanticSearchResult[] = [];
 
     for (const country of all) {
@@ -65,8 +73,7 @@ export class SemanticSearchService {
         }
       }
 
-      // Só inclui se passou em pelo menos um filtro
-      if (matchedCount > 0) {
+      if (matchedCount === allFilters.length) {
         results.push({
           cca2: country.cca2,
           cca3: country.cca3,
@@ -74,8 +81,8 @@ export class SemanticSearchService {
           flag: country.flag,
           continent: country.continent,
           subregion: country.subregion,
-          matchedTags: [...new Set(tags)], // dedup tags
-          score: totalScore + matchedCount * 2, // bônus por múltiplos matches
+          matchedTags: [...new Set(tags)],
+          score: totalScore + matchedCount * 2,
         });
       }
     }
