@@ -40,8 +40,6 @@ interface RestCountry {
 export class CountriesService {
   private readonly logger = new Logger(CountriesService.name);
   private readonly baseUrl = 'https://restcountries.com/v3.1';
-  private readonly fields =
-    'cca2,cca3,name,continents,region,subregion,borders,latlng,landlocked,languages,currencies,population,area,flags';
 
   private readonly byCca2 = new Map<string, CountryMeta>();
   private readonly byCca3 = new Map<string, CountryMeta>();
@@ -55,9 +53,7 @@ export class CountriesService {
     if (this.allLoaded) return;
     try {
       const { data } = await firstValueFrom(
-        this.http.get<RestCountry[]>(
-          `${this.baseUrl}/all?fields=${this.fields}`,
-        ),
+        this.http.get<RestCountry[]>(`${this.baseUrl}/all`),
       );
       for (const raw of data) {
         this.cache(raw);
@@ -81,7 +77,7 @@ export class CountriesService {
     try {
       const { data } = await firstValueFrom(
         this.http.get<RestCountry[]>(
-          `${this.baseUrl}/name/${encodeURIComponent(name)}?fields=${this.fields}`,
+          `${this.baseUrl}/name/${encodeURIComponent(name)}`,
         ),
       );
       const first = data[0];
@@ -100,7 +96,7 @@ export class CountriesService {
     try {
       const { data } = await firstValueFrom(
         this.http.get<RestCountry[]>(
-          `${this.baseUrl}/alpha/${upper}?fields=${this.fields}`,
+          `${this.baseUrl}/alpha/${upper}`,
         ),
       );
       const first = data[0];
@@ -119,7 +115,7 @@ export class CountriesService {
     try {
       const { data } = await firstValueFrom(
         this.http.get<RestCountry[]>(
-          `${this.baseUrl}/alpha/${upper}?fields=${this.fields}`,
+          `${this.baseUrl}/alpha/${upper}`,
         ),
       );
       const first = data[0];
@@ -137,7 +133,7 @@ export class CountriesService {
     try {
       const { data } = await firstValueFrom(
         this.http.get<RestCountry[]>(
-          `${this.baseUrl}/subregion/${encodeURIComponent(subregion)}?fields=${this.fields}`,
+          `${this.baseUrl}/subregion/${encodeURIComponent(subregion)}`,
         ),
       );
       const metas = data.map((c) => this.cache(c));
