@@ -1,6 +1,15 @@
 # EasyTrip
 
-Aplicação de planejamento de viagens que fornece informações em tempo real sobre destinos: clima, câmbio e dados do país, integrando APIs externas.
+Plataforma de planejamento de viagens que reúne em um só lugar tudo que você precisa saber antes de embarcar: clima, câmbio, informações do país e histórico de destinos pesquisados. 
+
+## Funcionalidades: 
+Busca de destinos — pesquise qualquer país e veja clima atual, moeda local e cotação em reais
+Clima em tempo real — temperatura, sensação térmica e umidade via OpenWeatherMap
+Conversão de moeda — cotação atualizada da moeda local para BRL
+Informações do país — capital, idioma, população e continente
+Perfil do usuário — histórico de pesquisas com gráficos e mapa interativo de países visitados
+Favoritos — salve e gerencie seus destinos preferidos
+Autenticação — cadastro e login com JWT
 
 ## Stack
 
@@ -17,13 +26,18 @@ Aplicação de planejamento de viagens que fornece informações em tempo real s
 
 ## Como rodar localmente
 
+Pré-requisitos:
+- Node.js 20+
+- npm 10+
+- PostgreSQL rodando localmente ou via Docker
+
 ### 1. Clone o repositório
 
 ```bash
 git clone https://github.com/marcella-81/EasyTrip.git
 cd EasyTrip
 ```
-
+-
 ### 2. Configure as variáveis de ambiente
 
 Crie `apps/backend/.env`:
