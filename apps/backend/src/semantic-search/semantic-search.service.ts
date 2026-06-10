@@ -1,10 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CountryMeta, CountriesService } from '../countries/countries.service';
-import {
-  keywordMap,
-  normalizeText,
-  removeStopwords,
-} from './keyword-map';
+import { keywordMap } from './keyword-map';
+import { FullTextSearchService } from './full-text-search.service';
 
 export interface SemanticSearchResult {
   cca2: string;
@@ -21,7 +18,10 @@ export interface SemanticSearchResult {
 export class SemanticSearchService {
   private readonly logger = new Logger(SemanticSearchService.name);
 
-  constructor(private readonly countries: CountriesService) {}
+  constructor(
+    private readonly countries: CountriesService,
+    private readonly fts: FullTextSearchService,
+  ) {}
 
   async search(query: string): Promise<SemanticSearchResult[]> {
     await this.countries.loadAll();
@@ -31,66 +31,40 @@ export class SemanticSearchService {
       this.logger.warn('getAll() retornou vazio — loadAll() pode ter falhado');
     }
 
-    const lowerQuery = normalizeText(query);
-    const words = removeStopwords(query);
+    // 1. Full-text search → cca2s rankeados por BM25
+    const matchedCca2s = this.fts.search(query);
 
-    // 1. Tentar match de frases inteiras primeiro
-    const matchedEntries = keywordMap.filter((entry) =>
-      entry.keywords.some((k) => {
-        const normK = normalizeText(k);
-        return lowerQuery.includes(normK) || normK.includes(lowerQuery);
-      }),
-    );
-
-    // 2. Complementar com match por palavras individuais (sem duplicar entradas)
-    const wordMatches = keywordMap.filter((entry) =>
-      words.some((word) =>
-        entry.keywords.some((k) => normalizeText(k).includes(word)),
-      ),
-    );
-
-    // Set elimina entradas duplicadas entre matchedEntries e wordMatches
-    const allFilters = [...new Set([...matchedEntries, ...wordMatches])];
-
-    if (allFilters.length === 0) {
-      this.logger.debug(`Nenhum filtro para query "${query}", usando fallback por nome`);
-      return this.fallbackNameSearch(all, lowerQuery);
+    if (matchedCca2s.length === 0) {
+      this.logger.debug(`Sem resultados FTS para "${query}", usando fallback por nome`);
+      return this.fallbackNameSearch(all, query.toLowerCase().trim());
     }
 
-    // 3. Lógica AND: país deve passar em TODOS os filtros matched
+    // 2. Para cada país matched → anotar com tags usando filtros estruturados
+    const byCca2 = new Map(all.map((c) => [c.cca2, c]));
     const results: SemanticSearchResult[] = [];
+    const total = matchedCca2s.length;
 
-    for (const country of all) {
-      const tags: string[] = [];
-      let totalScore = 0;
-      let matchedCount = 0;
+    for (let i = 0; i < matchedCca2s.length; i++) {
+      const country = byCca2.get(matchedCca2s[i]);
+      if (!country) continue;
 
-      for (const entry of allFilters) {
-        if (entry.filter(country)) {
-          tags.push(entry.tag);
-          totalScore += entry.score;
-          matchedCount++;
-        }
-      }
+      const matchedTags = keywordMap
+        .filter((e) => e.filter(country))
+        .map((e) => e.tag);
 
-      if (matchedCount === allFilters.length) {
-        results.push({
-          cca2: country.cca2,
-          cca3: country.cca3,
-          name: country.name,
-          flag: country.flag,
-          continent: country.continent,
-          subregion: country.subregion,
-          matchedTags: [...new Set(tags)],
-          score: totalScore + matchedCount * 2,
-        });
-      }
+      results.push({
+        cca2: country.cca2,
+        cca3: country.cca3,
+        name: country.name,
+        flag: country.flag,
+        continent: country.continent,
+        subregion: country.subregion,
+        matchedTags: [...new Set(matchedTags)],
+        score: total - i, // score decrescente pelo rank BM25
+      });
     }
 
-    // 4. Ordenar por score decrescente e limitar a 15
-    return results
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 15);
+    return results.slice(0, 15);
   }
 
   private fallbackNameSearch(
@@ -99,7 +73,7 @@ export class SemanticSearchService {
   ): SemanticSearchResult[] {
     const matches = all.filter(
       (c) =>
-        normalizeText(c.name).includes(query) ||
+        c.name.toLowerCase().includes(query) ||
         c.cca2.toLowerCase() === query ||
         c.cca3.toLowerCase() === query,
     );
