@@ -44,17 +44,6 @@ export function TopBar() {
 
         {/* Nav */}
         <nav className="flex items-center gap-1">
-          <Link to="/about">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs font-medium hidden sm:inline-flex"
-              style={{ color: '#7c8194' }}
-            >
-              Sobre
-            </Button>
-          </Link>
-
           {isAuthenticated ? (
             <>
               <Link to="/profile" className="flex items-center gap-2 px-2 py-1 rounded-lg transition-colors hover:bg-white/5">
