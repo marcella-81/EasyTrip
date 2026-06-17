@@ -30,14 +30,12 @@ export function WeatherRow({ clima, capital }: WeatherRowProps) {
 
   return (
     <div
-      className="rounded-xl p-4 flex items-start gap-3"
+      className="rounded-lg p-4 flex items-center gap-4"
       style={{ background: '#1e2029' }}
     >
-      <span className="text-2xl leading-none mt-0.5">{getWeatherEmoji(clima.descricao)}</span>
+      <span className="text-3xl leading-none shrink-0">{getWeatherEmoji(clima.descricao)}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-xs uppercase tracking-wider font-medium mb-1" style={{ color: '#7c8194' }}>
-          Clima em {capital}
-        </p>
+        <p className="et-label mb-1">Clima em {capital}</p>
         <p className="text-sm font-semibold" style={{ color: '#f0f2f8' }}>
           {clima.temperatura} · {clima.descricao}
         </p>

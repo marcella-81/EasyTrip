@@ -72,7 +72,6 @@ export function WorldMapCard({
               className="text-lg font-semibold"
               style={{
                 color: '#f0f2f8',
-                fontFamily: '"Instrument Serif", serif',
               }}
             >
               {heading}

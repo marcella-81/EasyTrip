@@ -30,7 +30,7 @@ export function WorldPercentChart({ totalVisited }: WorldPercentChartProps) {
       <CardHeader>
         <h2
           className="text-lg font-semibold"
-          style={{ color: '#f0f2f8', fontFamily: '"Instrument Serif", serif' }}
+          style={{ color: '#f0f2f8' }}
         >
           Percentual do mundo
         </h2>
@@ -73,7 +73,6 @@ export function WorldPercentChart({ totalVisited }: WorldPercentChartProps) {
             className="text-4xl font-semibold"
             style={{
               color: '#f0f2f8',
-              fontFamily: '"Instrument Serif", serif',
             }}
           >
             {percent}%

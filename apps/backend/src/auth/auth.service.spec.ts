@@ -81,4 +81,20 @@ describe('AuthService', () => {
       UnauthorizedException,
     );
   });
+
+  it('me: retorna usuário público quando encontrado', async () => {
+    users.findById.mockResolvedValueOnce({
+      id: 'u1',
+      email: 'a@b.com',
+      role: 'USER',
+      createdAt: new Date('2026-01-01T00:00:00Z'),
+    });
+    const res = await service.me('u1');
+    expect(res).toMatchObject({ id: 'u1', email: 'a@b.com', role: 'USER' });
+  });
+
+  it('me: 401 quando usuário não existe', async () => {
+    users.findById.mockResolvedValueOnce(null);
+    await expect(service.me('ghost')).rejects.toBeInstanceOf(UnauthorizedException);
+  });
 });
