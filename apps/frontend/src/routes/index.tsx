@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AppHeader } from '@/components/AppHeader'
 import { DestinationCard } from '@/components/DestinationCard'
@@ -13,8 +12,7 @@ import { useSearchHistory } from '@/hooks/useSearchHistory'
 import { useSemanticSearch } from '@/hooks/useSemanticSearch'
 
 export function HomePage() {
-  const [semanticMode, setSemanticMode] = useState(false)
-  const { data, loading, error, search } = useDestination()
+  const { data, loading: destLoading, search } = useDestination()
   const {
     data: semanticData,
     loading: semanticLoading,
@@ -27,53 +25,29 @@ export function HomePage() {
 
   function handleSearch(query: string) {
     add(query)
-    if (semanticMode) {
-      clearSemantic()
-      semanticSearch(query)
-    } else {
-      search(query)
-    }
-  }
-
-  function handleSemanticModeChange(enabled: boolean) {
-    setSemanticMode(enabled)
-    // limpa resultados ao trocar modo
-    if (!enabled && semanticData) {
-      clearSemantic()
-    }
+    clearSemantic()
+    semanticSearch(query)
   }
 
   function handleSelectFromSemantic(countryName: string) {
-    // ao clicar num resultado semântico, faz busca completa
     search(countryName)
     clearSemantic()
-    setSemanticMode(false)
   }
 
-  const isLoading = semanticMode ? semanticLoading : loading
-  const searchError = semanticMode ? semanticError : error
+  const isLoading = semanticLoading || destLoading
 
   return (
     <div className="min-h-[calc(100vh-57px)] flex flex-col items-center justify-start px-4 pt-16 pb-16">
       <div className="w-full max-w-xl">
         <AppHeader />
-        <SearchBar
-          onSearch={handleSearch}
-          disabled={isLoading}
-          semanticMode={semanticMode}
-          onSemanticModeChange={handleSemanticModeChange}
-        />
+        <SearchBar onSearch={handleSearch} disabled={isLoading} />
 
-        {!semanticMode && (
-          <>
-            <SearchHistory history={history} onSelect={handleSearch} onClear={clear} />
-            <RecommendationsStrip items={recs} onSelect={handleSearch} />
-          </>
-        )}
+        <SearchHistory history={history} onSelect={handleSearch} onClear={clear} />
+        <RecommendationsStrip items={recs} onSelect={handleSearch} />
 
         {isLoading && <DestinationSkeleton />}
 
-        {searchError && (
+        {semanticError && (
           <Alert
             className="border-0"
             style={{
@@ -82,18 +56,18 @@ export function HomePage() {
               color: '#f87171',
             }}
           >
-            <AlertDescription className="text-sm">{searchError}</AlertDescription>
+            <AlertDescription className="text-sm">{semanticError}</AlertDescription>
           </Alert>
         )}
 
-        {semanticMode && semanticData && (
+        {semanticData && (
           <SemanticSearchResults
             items={semanticData}
             onSelect={handleSelectFromSemantic}
           />
         )}
 
-        {!semanticMode && data && <DestinationCard data={data} />}
+        {data && <DestinationCard data={data} />}
       </div>
     </div>
   )

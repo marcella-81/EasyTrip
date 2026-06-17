@@ -1,169 +1,109 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { firstValueFrom } from 'rxjs';
+import worldCountries from 'world-countries';
+
+export interface CurrencyDetail {
+  code: string;
+  name: string;
+  symbol: string;
+}
 
 export interface CountryMeta {
   cca2: string;
   cca3: string;
   name: string;
   continent: string;
-  region: string;
   subregion: string;
-  borders: string[];
+  capital: string;
   latlng: [number, number];
   landlocked: boolean;
   languages: string[];
   currencies: string[];
-  population: number;
-  area: number;
+  currencyDetails: CurrencyDetail[];
   flag: string;
+  altSpellings: string[];
 }
 
-interface RestCountry {
-  cca2: string;
-  cca3: string;
-  name: { common: string };
-  continents: string[];
-  region: string;
-  subregion?: string;
-  borders?: string[];
-  latlng?: number[];
-  landlocked?: boolean;
-  languages?: Record<string, string>;
-  currencies?: Record<string, { name?: string; symbol?: string }>;
-  population?: number;
-  area?: number;
-  flags?: { svg?: string; png?: string };
+const regionToContinent: Record<string, string> = {
+  Antarctic: 'Antarctica',
+};
+
+function toMeta(c: (typeof worldCountries)[number]): CountryMeta {
+  const currencyDetails: CurrencyDetail[] = Object.entries(
+    c.currencies ?? {},
+  ).map(([code, cur]) => ({
+    code,
+    name: cur.name ?? '',
+    symbol: cur.symbol ?? '',
+  }));
+
+  return {
+    cca2: c.cca2,
+    cca3: c.cca3,
+    name: c.name.common,
+    continent: regionToContinent[c.region] ?? c.region,
+    subregion: c.subregion ?? '',
+    capital: c.capital?.[0] ?? '',
+    latlng: c.latlng ?? [0, 0],
+    landlocked: c.landlocked ?? false,
+    languages: Object.values(c.languages ?? {}),
+    currencies: Object.keys(c.currencies ?? {}),
+    currencyDetails,
+    flag: `https://flagcdn.com/${c.cca2.toLowerCase()}.svg`,
+    altSpellings: c.altSpellings ?? [],
+  };
 }
 
 @Injectable()
 export class CountriesService {
   private readonly logger = new Logger(CountriesService.name);
-  private readonly baseUrl = 'https://restcountries.com/v3.1';
 
-  private readonly byCca2 = new Map<string, CountryMeta>();
-  private readonly byCca3 = new Map<string, CountryMeta>();
-  private readonly byNameLower = new Map<string, CountryMeta>();
-  private readonly bySubregion = new Map<string, CountryMeta[]>();
-  private allLoaded = false;
+  private readonly all: CountryMeta[] = worldCountries.map(toMeta);
+  private readonly byCca2 = new Map<string, CountryMeta>(
+    this.all.map((c) => [c.cca2, c]),
+  );
+  private readonly byCca3 = new Map<string, CountryMeta>(
+    this.all.map((c) => [c.cca3, c]),
+  );
+  private readonly byNameLower = new Map<string, CountryMeta>(
+    this.all.map((c) => [c.name.toLowerCase(), c]),
+  );
 
-  constructor(private readonly http: HttpService) {}
-
-  async loadAll(): Promise<void> {
-    if (this.allLoaded) return;
-    try {
-      const { data } = await firstValueFrom(
-        this.http.get<RestCountry[]>(`${this.baseUrl}/all`),
-      );
-      for (const raw of data) {
-        this.cache(raw);
-      }
-      this.logger.log(`${data.length} países carregados do RestCountries`);
-      this.allLoaded = true;
-    } catch (err) {
-      this.logger.error('Falha ao carregar países do RestCountries', err);
-    }
+  constructor() {
+    this.logger.log(`${this.all.length} países carregados (world-countries)`);
   }
+
+  async loadAll(): Promise<void> {}
 
   getAll(): CountryMeta[] {
-    return Array.from(this.byCca2.values());
+    return this.all;
   }
 
-  async getByName(name: string): Promise<CountryMeta> {
+  getByName(name: string): CountryMeta {
     const lower = name.toLowerCase().trim();
-    const cached = this.byNameLower.get(lower);
-    if (cached) return cached;
+    const direct = this.byNameLower.get(lower);
+    if (direct) return direct;
 
-    try {
-      const { data } = await firstValueFrom(
-        this.http.get<RestCountry[]>(
-          `${this.baseUrl}/name/${encodeURIComponent(name)}`,
-        ),
-      );
-      const first = data[0];
-      if (!first) throw new Error('empty');
-      return this.cache(first);
-    } catch {
-      throw new NotFoundException(`País "${name}" não encontrado.`);
-    }
+    const match = this.all.find(
+      (c) =>
+        c.altSpellings.some((s) => s.toLowerCase() === lower) ||
+        c.name.toLowerCase().includes(lower),
+    );
+    if (match) return match;
+
+    throw new NotFoundException(`País "${name}" não encontrado.`);
   }
 
-  async getByCca2(cca2: string): Promise<CountryMeta | null> {
-    const upper = cca2.toUpperCase();
-    const cached = this.byCca2.get(upper);
-    if (cached) return cached;
-
-    try {
-      const { data } = await firstValueFrom(
-        this.http.get<RestCountry[]>(
-          `${this.baseUrl}/alpha/${upper}`,
-        ),
-      );
-      const first = data[0];
-      if (!first) return null;
-      return this.cache(first);
-    } catch {
-      return null;
-    }
+  getByCca2(cca2: string): CountryMeta | null {
+    return this.byCca2.get(cca2.toUpperCase()) ?? null;
   }
 
-  async getByCca3(cca3: string): Promise<CountryMeta | null> {
-    const upper = cca3.toUpperCase();
-    const cached = this.byCca3.get(upper);
-    if (cached) return cached;
+  getByCca3(cca3: string): CountryMeta | null {
+    return this.byCca3.get(cca3.toUpperCase()) ?? null;
+  }
 
-    try {
-      const { data } = await firstValueFrom(
-        this.http.get<RestCountry[]>(
-          `${this.baseUrl}/alpha/${upper}`,
-        ),
-      );
-      const first = data[0];
-      if (!first) return null;
-      return this.cache(first);
-    } catch {
-      return null;
-    }}
-
-  async getBySubregion(subregion: string): Promise<CountryMeta[]> {
+  getBySubregion(subregion: string): CountryMeta[] {
     if (!subregion) return [];
-    const cached = this.bySubregion.get(subregion);
-    if (cached) return cached;
-
-    try {
-      const { data } = await firstValueFrom(
-        this.http.get<RestCountry[]>(
-          `${this.baseUrl}/subregion/${encodeURIComponent(subregion)}`,
-        ),
-      );
-      const metas = data.map((c) => this.cache(c));
-      this.bySubregion.set(subregion, metas);
-      return metas;
-    } catch {
-      return [];
-    }
-  }
-
-  private cache(raw: RestCountry): CountryMeta {
-    const meta: CountryMeta = {
-      cca2: raw.cca2,
-      cca3: raw.cca3,
-      name: raw.name.common,
-      continent: raw.continents?.[0] ?? '',
-      region: raw.region ?? '',
-      subregion: raw.subregion ?? '',
-      borders: raw.borders ?? [],
-      latlng: [raw.latlng?.[0] ?? 0, raw.latlng?.[1] ?? 0] as [number, number],
-      landlocked: raw.landlocked ?? false,
-      languages: raw.languages ? Object.values(raw.languages) : [],
-      currencies: raw.currencies ? Object.keys(raw.currencies) : [],
-      population: raw.population ?? 0,
-      area: raw.area ?? 0,
-      flag: raw.flags?.svg ?? raw.flags?.png ?? '',
-    };
-    this.byCca2.set(meta.cca2, meta);
-    this.byCca3.set(meta.cca3, meta);
-    this.byNameLower.set(meta.name.toLowerCase(), meta);
-    return meta;
+    const lower = subregion.toLowerCase();
+    return this.all.filter((c) => c.subregion.toLowerCase() === lower);
   }
 }

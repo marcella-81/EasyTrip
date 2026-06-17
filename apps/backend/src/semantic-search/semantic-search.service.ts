@@ -31,8 +31,8 @@ export class SemanticSearchService {
       this.logger.warn('getAll() retornou vazio — loadAll() pode ter falhado');
     }
 
-    // 1. Full-text search → cca2s rankeados por BM25
-    const matchedCca2s = this.fts.search(query);
+    // 1. Full-text search → cca2s rankeados por BM25 (lazy rebuild if needed)
+    const matchedCca2s = await this.fts.search(query);
 
     if (matchedCca2s.length === 0) {
       this.logger.debug(`Sem resultados FTS para "${query}", usando fallback por nome`);
@@ -71,12 +71,23 @@ export class SemanticSearchService {
     all: CountryMeta[],
     query: string,
   ): SemanticSearchResult[] {
-    const matches = all.filter(
-      (c) =>
-        c.name.toLowerCase().includes(query) ||
-        c.cca2.toLowerCase() === query ||
-        c.cca3.toLowerCase() === query,
-    );
+    const normalized = query
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+
+    const matches = all.filter((c) => {
+      const name = c.name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+      return (
+        name.includes(normalized) ||
+        c.cca2.toLowerCase() === normalized ||
+        c.cca3.toLowerCase() === normalized
+      );
+    });
 
     return matches
       .map<SemanticSearchResult>((c) => ({
