@@ -31,26 +31,25 @@ export class SemanticSearchService {
       this.logger.warn('getAll() retornou vazio — loadAll() pode ter falhado');
     }
 
-    // 1. Full-text search → cca2s rankeados por BM25 (lazy rebuild if needed)
-    const matchedCca2s = await this.fts.search(query);
+    // 1. Full-text search → ranked by BM25 (lazy rebuild if needed)
+    const ftsHits = await this.fts.search(query);
 
-    if (matchedCca2s.length === 0) {
+    if (ftsHits.length === 0) {
       this.logger.debug(`Sem resultados FTS para "${query}", usando fallback por nome`);
       return this.fallbackNameSearch(all, query.toLowerCase().trim());
     }
 
-    // 2. Para cada país matched → anotar com tags usando filtros estruturados
+    // 2. Combine BM25 score with keyword-map tag scores, then sort desc
     const byCca2 = new Map(all.map((c) => [c.cca2, c]));
     const results: SemanticSearchResult[] = [];
-    const total = matchedCca2s.length;
 
-    for (let i = 0; i < matchedCca2s.length; i++) {
-      const country = byCca2.get(matchedCca2s[i]);
+    for (const { cca2, bm25 } of ftsHits) {
+      const country = byCca2.get(cca2);
       if (!country) continue;
 
-      const matchedTags = keywordMap
-        .filter((e) => e.filter(country))
-        .map((e) => e.tag);
+      const matchedEntries = keywordMap.filter((e) => e.filter(country));
+      const tagScore = matchedEntries.reduce((sum, e) => sum + e.score, 0);
+      const matchedTags = matchedEntries.map((e) => e.tag);
 
       results.push({
         cca2: country.cca2,
@@ -60,11 +59,11 @@ export class SemanticSearchService {
         continent: country.continent,
         subregion: country.subregion,
         matchedTags: [...new Set(matchedTags)],
-        score: total - i, // score decrescente pelo rank BM25
+        score: bm25 + tagScore,
       });
     }
 
-    return results.slice(0, 15);
+    return results.sort((a, b) => b.score - a.score).slice(0, 15);
   }
 
   private fallbackNameSearch(

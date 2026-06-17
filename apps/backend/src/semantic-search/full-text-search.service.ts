@@ -52,7 +52,7 @@ export class FullTextSearchService implements OnModuleInit {
     this.logger.log(`index built: ${docs.length} countries`);
   }
 
-  async search(query: string): Promise<string[]> {
+  async search(query: string): Promise<{ cca2: string; bm25: number }[]> {
     if (!this.indexed) {
       await this.buildIndex();
     }
@@ -64,6 +64,6 @@ export class FullTextSearchService implements OnModuleInit {
       combineWith: 'OR',
     });
 
-    return results.map((r) => r.id as string);
+    return results.map((r) => ({ cca2: r.id as string, bm25: r.score }));
   }
 }
