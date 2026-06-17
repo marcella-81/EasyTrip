@@ -8,13 +8,11 @@ import { PrismaService } from '../prisma/prisma.service';
 
 const RECENT_SEARCHES = 5;
 const MAX_RESULTS = 8;
-const WEIGHT_BORDER = 2;
 const WEIGHT_SUBREGION = 1;
 
 interface Tally {
   meta: CountryMeta;
   score: number;
-  hasBorder: boolean;
 }
 
 @Injectable()
@@ -40,20 +38,12 @@ export class RecommendationsService {
 
     for (const entry of recent) {
       const origin = await this.countries.getByCca2(entry.cca2);
-      if (!origin) continue;
+      if (!origin?.subregion) continue;
 
-      for (const cca3 of origin.borders) {
-        const neighbor = await this.countries.getByCca3(cca3);
-        if (!neighbor || excluded.has(neighbor.cca2)) continue;
-        this.bump(tally, neighbor, WEIGHT_BORDER, true);
-      }
-
-      if (origin.subregion) {
-        const siblings = await this.countries.getBySubregion(origin.subregion);
-        for (const sib of siblings) {
-          if (sib.cca2 === origin.cca2 || excluded.has(sib.cca2)) continue;
-          this.bump(tally, sib, WEIGHT_SUBREGION, false);
-        }
+      const siblings = await this.countries.getBySubregion(origin.subregion);
+      for (const sib of siblings) {
+        if (sib.cca2 === origin.cca2 || excluded.has(sib.cca2)) continue;
+        this.bump(tally, sib, WEIGHT_SUBREGION);
       }
     }
 
@@ -65,7 +55,7 @@ export class RecommendationsService {
         cca3: t.meta.cca3,
         countryName: t.meta.name,
         continent: t.meta.continent,
-        reason: (t.hasBorder ? 'border' : 'subregion') as RecommendationReason,
+        reason: 'subregion' as RecommendationReason,
         score: t.score,
       }));
   }
@@ -91,18 +81,12 @@ export class RecommendationsService {
     return out;
   }
 
-  private bump(
-    tally: Map<string, Tally>,
-    meta: CountryMeta,
-    weight: number,
-    isBorder: boolean,
-  ) {
+  private bump(tally: Map<string, Tally>, meta: CountryMeta, weight: number) {
     const cur = tally.get(meta.cca2);
     if (cur) {
       cur.score += weight;
-      cur.hasBorder = cur.hasBorder || isBorder;
     } else {
-      tally.set(meta.cca2, { meta, score: weight, hasBorder: isBorder });
+      tally.set(meta.cca2, { meta, score: weight });
     }
   }
 }

@@ -26,10 +26,8 @@ Autenticação — cadastro e login com JWT
 
 ## Como rodar localmente
 
-Pré-requisitos:
-- Node.js 20+
-- npm 10+
-- PostgreSQL rodando localmente ou via Docker
+O backend roda em **Docker**, conectado ao Postgres **compartilhado no Railway** (ambiente `dev`).
+Ninguém precisa rodar `prisma generate` ou `prisma migrate` manualmente — o container faz tudo no boot.
 
 ### 1. Clone o repositório
 
@@ -37,32 +35,46 @@ Pré-requisitos:
 git clone https://github.com/marcella-81/EasyTrip.git
 cd EasyTrip
 ```
--
-### 2. Configure as variáveis de ambiente
 
-Crie `apps/backend/.env`:
+### 2. Configure o `.env` do backend
 
-```env
-PORT=3000
-OPENWEATHER_API_KEY=sua_chave_aqui
-EXCHANGERATE_API_KEY=sua_chave_aqui
+Copie o exemplo e preencha:
+
+```bash
+cp apps/backend/.env.example apps/backend/.env
 ```
 
-### 3. Instale as dependências
+Peça a `DATABASE_URL` ao dono do projeto (ou pegue no Railway:
+`easytrip` → env `dev` → serviço `Postgres` → Variables → `DATABASE_PUBLIC_URL`).
+
+### 3. Instale dependências do monorepo (para o frontend rodar local)
 
 ```bash
 npm install
 ```
 
-### 4. Execute em modo desenvolvimento
+### 4. Suba o backend em Docker
 
 ```bash
-npm run dev
+npm run backend:up       # build + start em background
+npm run backend:logs     # acompanha logs (Ctrl+C pra sair, container segue rodando)
 ```
 
-Isso inicia em paralelo:
-- **Backend** NestJS em `http://localhost:3000`
-- **Frontend** Vite em `http://localhost:5173` (proxy `/api` → `:3000`)
+No boot o container executa:
+1. `prisma generate`
+2. `prisma migrate deploy` (aplica migrations pendentes no Railway)
+3. `nest start --watch`
+
+Hot-reload: edições em `apps/backend/src`, `apps/backend/prisma` e `packages/shared/src` refletem automaticamente.
+
+### 5. Rode o frontend local
+
+```bash
+npm run dev --workspace=@easytrip/frontend
+```
+
+- **Backend** (Docker): `http://localhost:3000`
+- **Frontend** (Vite): `http://localhost:5173` (proxy `/api` → `:3000`)
 
 ---
 
@@ -70,7 +82,13 @@ Isso inicia em paralelo:
 
 | Comando | Descrição |
 |---------|-----------|
-| `npm run dev` | Backend + frontend em paralelo com hot-reload |
+| `npm run backend:up` | Build + start do backend em Docker (conecta no Railway) |
+| `npm run backend:down` | Para o backend |
+| `npm run backend:logs` | Tail dos logs do backend |
+| `npm run backend:rebuild` | Rebuild completo da imagem (use após mudar `package.json`/`Dockerfile`) |
+| `npm run db:test:up` | Sobe Postgres local em tmpfs (porta 5433) pra rodar testes |
+| `npm run db:test:down` | Para o Postgres de teste |
+| `npm run dev` | Backend + frontend em paralelo com hot-reload (sem Docker) |
 | `npm run build` | Build de todos os pacotes (com cache Turborepo) |
 | `npm run lint` | Lint em todos os pacotes |
 | `npm run test` | Testes em todos os pacotes |

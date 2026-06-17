@@ -6,11 +6,8 @@ export type FilterFn = (meta: {
   landlocked: boolean;
   languages: string[];
   currencies: string[];
-  population: number;
-  area: number;
   continent: string;
   subregion: string;
-  borders: string[];
   name: string;
   cca2: string;
   cca3: string;
@@ -25,8 +22,13 @@ interface KeywordEntry {
 
 // ---------- Helpers ----------
 const lat = (m: { latlng: [number, number] }) => m.latlng[0];
-const isSouthernHemisphere = (m: { latlng: [number, number] }) => lat(m) < 0;
-const isNorthernHemisphere = (m: { latlng: [number, number] }) => lat(m) > 0;
+// Países sem dado geográfico são mapeados para [0,0] — excluir de filtros lat-based
+const hasCoords = (m: { latlng: [number, number] }) =>
+  !(m.latlng[0] === 0 && m.latlng[1] === 0);
+const isSouthernHemisphere = (m: { latlng: [number, number] }) =>
+  hasCoords(m) && lat(m) < 0;
+const isNorthernHemisphere = (m: { latlng: [number, number] }) =>
+  hasCoords(m) && lat(m) > 0;
 
 // ---------- Keyword Map ----------
 export const keywordMap: KeywordEntry[] = [
@@ -37,7 +39,7 @@ export const keywordMap: KeywordEntry[] = [
       'pais frio', 'país frio', 'paises frios', 'países frios',
       'cold country', 'cold countries',
     ],
-    filter: (m) => Math.abs(lat(m)) > 50,
+    filter: (m) => hasCoords(m) && Math.abs(lat(m)) > 50,
     tag: 'Frio',
     score: 10,
   },
@@ -48,7 +50,7 @@ export const keywordMap: KeywordEntry[] = [
     ],
     filter: (m) => {
       const a = Math.abs(lat(m));
-      return a >= 35 && a <= 50;
+      return hasCoords(m) && a >= 35 && a <= 50;
     },
     tag: 'Clima ameno',
     score: 10,
@@ -58,7 +60,7 @@ export const keywordMap: KeywordEntry[] = [
       'quente', 'hot', 'warm', 'calor', 'caloroso', 'warm country',
       'pais quente', 'país quente', 'paises quentes', 'países quentes',
     ],
-    filter: (m) => Math.abs(lat(m)) < 25,
+    filter: (m) => hasCoords(m) && Math.abs(lat(m)) < 25,
     tag: 'Quente',
     score: 10,
   },
@@ -66,7 +68,7 @@ export const keywordMap: KeywordEntry[] = [
     keywords: [
       'tropical', 'tropico', 'trópico', 'tropical country', 'tropical countries',
     ],
-    filter: (m) => Math.abs(lat(m)) <= 23.5,
+    filter: (m) => hasCoords(m) && Math.abs(lat(m)) <= 23.5,
     tag: 'Tropical',
     score: 12,
   },
@@ -76,7 +78,7 @@ export const keywordMap: KeywordEntry[] = [
       'regiao polar', 'região polar', 'polo norte', 'polo sul',
       'north pole', 'south pole',
     ],
-    filter: (m) => Math.abs(lat(m)) >= 66.5,
+    filter: (m) => hasCoords(m) && Math.abs(lat(m)) >= 66.5,
     tag: 'Polar',
     score: 15,
   },
@@ -456,9 +458,7 @@ export const keywordMap: KeywordEntry[] = [
       'ilha', 'ilhas', 'island', 'islands', 'island country', 'island nation',
       'pais ilha', 'país ilha', 'paises ilha', 'países ilha',
     ],
-    filter: (m) =>
-      !m.landlocked &&
-      (m.area < 300000 || m.name.toLowerCase().includes('island')),
+    filter: (m) => !m.landlocked && m.name.toLowerCase().includes('island'),
     tag: 'Ilha',
     score: 12,
   },
@@ -482,98 +482,6 @@ export const keywordMap: KeywordEntry[] = [
     tag: 'Com litoral',
     score: 8,
   },
-  {
-    keywords: [
-      'vizinhos do brasil', 'neighbors of brazil', 'bordering brazil',
-      'fronteira com brasil', 'fronteira com o brasil', 'paises vizinhos do brasil',
-      'países vizinhos do brasil', 'paises vizinhos do brasil',
-    ],
-    filter: (m) => m.borders.includes('BRA'),
-    tag: 'Vizinho do Brasil',
-    score: 15,
-  },
-  {
-    keywords: [
-      'vizinhos da argentina', 'neighbors of argentina', 'bordering argentina',
-      'fronteira com argentina', 'fronteira com a argentina',
-      'paises vizinhos da argentina', 'países vizinhos da argentina',
-    ],
-    filter: (m) => m.borders.includes('ARG'),
-    tag: 'Vizinho da Argentina',
-    score: 15,
-  },
-  {
-    keywords: [
-      'vizinhos da frança', 'neighbors of france', 'bordering france',
-      'fronteira com frança', 'fronteira com a frança',
-      'paises vizinhos da frança', 'países vizinhos da frança',
-    ],
-    filter: (m) => m.borders.includes('FRA'),
-    tag: 'Vizinho da França',
-    score: 15,
-  },
-  {
-    keywords: [
-      'vizinhos da alemanha', 'neighbors of germany', 'bordering germany',
-      'fronteira com alemanha', 'fronteira com a alemanha',
-      'paises vizinhos da alemanha', 'países vizinhos da alemanha',
-    ],
-    filter: (m) => m.borders.includes('DEU'),
-    tag: 'Vizinho da Alemanha',
-    score: 15,
-  },
-  {
-    keywords: [
-      'vizinhos da china', 'neighbors of china', 'bordering china',
-      'fronteira com china', 'fronteira com a china',
-      'paises vizinhos da china', 'países vizinhos da china',
-    ],
-    filter: (m) => m.borders.includes('CHN'),
-    tag: 'Vizinho da China',
-    score: 15,
-  },
-
-  // --- Tamanho ---
-  {
-    keywords: [
-      'pequeno', 'small', 'tiny', 'minúsculo', 'minuscule',
-      'pais pequeno', 'país pequeno', 'paises pequenos', 'países pequenos',
-      'small country', 'small countries',
-    ],
-    filter: (m) => m.area < 100000,
-    tag: 'Pequeno',
-    score: 8,
-  },
-  {
-    keywords: [
-      'grande', 'big', 'large', 'enorme', 'gigante', 'giant', 'huge',
-      'pais grande', 'país grande', 'paises grandes', 'países grandes',
-      'big country', 'big countries', 'large country', 'large countries',
-    ],
-    filter: (m) => m.area > 1000000,
-    tag: 'Grande',
-    score: 8,
-  },
-  {
-    keywords: [
-      'populoso', 'populous', 'densamente populado', 'densely populated',
-      'muita gente', 'muita populacao', 'muita população', 'high population',
-      'muitos habitantes',
-    ],
-    filter: (m) => m.population > 100_000_000,
-    tag: 'Populoso',
-    score: 8,
-  },
-  {
-    keywords: [
-      'pouco populado', 'sparsely populated', 'pouca gente', 'poucos habitantes',
-      'pequena populacao', 'pequena população', 'low population',
-    ],
-    filter: (m) => m.population < 5_000_000,
-    tag: 'Pouco populado',
-    score: 8,
-  },
-
   // --- Brasil (easter egg útil) ---
   {
     keywords: [

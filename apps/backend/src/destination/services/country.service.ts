@@ -1,38 +1,30 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { firstValueFrom } from 'rxjs';
+import { CountriesService } from '../../countries/countries.service';
 
 @Injectable()
 export class CountryService {
-  private readonly baseUrl: string;
-
-  constructor(private readonly http: HttpService) {
-    this.baseUrl = 'https://restcountries.com/v3.1';
-  }
+  constructor(private readonly countries: CountriesService) {}
 
   async getCountryInfo(countryName: string) {
-    try {
-      const { data } = await firstValueFrom(
-        this.http.get(`${this.baseUrl}/name/${countryName}`),
-      );
-
-      const country = data[0];
-      const currency = Object.values(
-        country.currencies as Record<string, { name: string; symbol: string }>,
-      )[0];
-
-      return {
-        capital: country.capital?.[0] ?? country.name.common,
-        idioma: Object.values(country.languages as Record<string, string>)[0],
-        moeda: `${currency.name} (${currency.symbol})`,
-        codigoMoeda: Object.keys(country.currencies)[0] as string,
-        populacao: (country.population as number).toLocaleString('pt-BR'),
-        continente: country.continents[0] as string,
-        cca2: country.cca2 as string,
-        cca3: country.cca3 as string,
-      };
-    } catch {
+    const country = await this.countries.getByName(countryName);
+    if (!country) {
       throw new NotFoundException(`País "${countryName}" não encontrado.`);
     }
+
+    const currency = country.currencyDetails[0];
+    const moeda = currency
+      ? `${currency.name} (${currency.symbol})`
+      : country.currencies[0] ?? 'N/A';
+
+    return {
+      capital: country.capital || country.name,
+      idioma: country.languages[0] ?? 'N/A',
+      moeda,
+      codigoMoeda: country.currencies[0] ?? 'N/A',
+      populacao: 'N/A',
+      continente: country.continent,
+      cca2: country.cca2,
+      cca3: country.cca3,
+    };
   }
 }
