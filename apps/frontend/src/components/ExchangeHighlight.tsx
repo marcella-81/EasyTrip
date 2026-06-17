@@ -1,4 +1,5 @@
 import type { ExchangeInfo } from '@easytrip/shared'
+import { TrendingUp } from 'lucide-react'
 
 interface ExchangeHighlightProps {
   cambio: ExchangeInfo
@@ -9,17 +10,20 @@ export function ExchangeHighlight({ cambio }: ExchangeHighlightProps) {
 
   return (
     <div
-      className="rounded-xl p-4 flex items-center gap-3"
+      className="rounded-lg p-4 flex items-center gap-4"
       style={{
-        background: 'linear-gradient(135deg, rgba(79,142,247,0.12), rgba(125,211,252,0.08))',
-        border: '1px solid rgba(79,142,247,0.2)',
+        background: 'linear-gradient(135deg, rgba(79,142,247,0.1) 0%, rgba(125,211,252,0.05) 100%)',
+        border: '1px solid rgba(79,142,247,0.18)',
       }}
     >
-      <span className="text-xl">💱</span>
+      <div
+        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+        style={{ background: 'rgba(79,142,247,0.15)' }}
+      >
+        <TrendingUp size={16} style={{ color: '#7dd3fc' }} />
+      </div>
       <div>
-        <p className="text-xs uppercase tracking-wider font-medium mb-0.5" style={{ color: '#7c8194' }}>
-          Câmbio para Real
-        </p>
+        <p className="et-label mb-0.5">Câmbio para Real (BRL)</p>
         <p
           className="text-sm font-semibold"
           style={{

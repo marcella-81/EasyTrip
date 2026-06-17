@@ -1,6 +1,5 @@
-import { useState, type KeyboardEvent } from 'react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { useState, useRef, type KeyboardEvent } from 'react'
+import { Search } from 'lucide-react'
 
 interface SearchBarProps {
   onSearch: (query: string) => void
@@ -9,6 +8,7 @@ interface SearchBarProps {
 
 export function SearchBar({ onSearch, disabled }: SearchBarProps) {
   const [value, setValue] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   function handleSearch() {
     if (value.trim()) onSearch(value.trim())
@@ -19,28 +19,37 @@ export function SearchBar({ onSearch, disabled }: SearchBarProps) {
   }
 
   return (
-    <div className="flex gap-2 mb-6">
-      <Input
+    <div
+      className="flex items-center gap-0 mb-7 rounded-xl overflow-hidden transition-shadow"
+      style={{
+        background: '#16181f',
+        border: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
+      }}
+      onClick={() => inputRef.current?.focus()}
+    >
+      <div className="pl-4 flex items-center shrink-0" style={{ color: '#4e5468' }}>
+        <Search size={17} />
+      </div>
+      <input
+        ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Busque por destino, clima, idioma, região..."
+        placeholder="Busque por clima, idioma, região, país..."
         disabled={disabled}
-        className="flex-1 h-11 text-sm border-0 focus-visible:ring-1 focus-visible:ring-[#4f8ef7]"
-        style={{
-          background: '#16181f',
-          color: '#f0f2f8',
-          border: '1px solid rgba(255,255,255,0.1)',
-        }}
+        className="flex-1 bg-transparent h-12 px-3 text-sm outline-none placeholder:text-muted2"
+        style={{ color: '#f0f2f8' }}
       />
-      <Button
+      <button
+        type="button"
         onClick={handleSearch}
         disabled={disabled || !value.trim()}
-        className="h-11 px-6 font-medium text-sm border-0 cursor-pointer"
-        style={{ background: 'linear-gradient(135deg, #4f8ef7, #7dd3fc)', color: '#fff' }}
+        className="shrink-0 h-12 px-5 text-sm font-semibold rounded-none transition-opacity disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+        style={{ background: 'linear-gradient(135deg, #4f8ef7, #7dd3fc)', color: '#0e0f14' }}
       >
         Buscar
-      </Button>
+      </button>
     </div>
   )
 }

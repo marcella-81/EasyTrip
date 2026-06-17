@@ -94,7 +94,14 @@
       "^@easytrip/shared/(.*)$": "<rootDir>/../../../packages/shared/src/$1"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!main.ts",
+      "!**/*.module.ts",
+      "!**/*.dto.ts",
+      "!**/test-utils/**",
+      "!**/*.decorator.ts",
+      "!prisma/prisma.service.ts",
+      "!common/swagger-responses.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

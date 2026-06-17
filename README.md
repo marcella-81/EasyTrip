@@ -1,15 +1,16 @@
 # EasyTrip
 
-Plataforma de planejamento de viagens que reúne em um só lugar tudo que você precisa saber antes de embarcar: clima, câmbio, informações do país e histórico de destinos pesquisados. 
+Plataforma de exploração de destinos que reúne clima, câmbio e informações de países em um só lugar, com busca semântica em linguagem natural.
 
-## Funcionalidades: 
-Busca de destinos — pesquise qualquer país e veja clima atual, moeda local e cotação em reais
-Clima em tempo real — temperatura, sensação térmica e umidade via OpenWeatherMap
-Conversão de moeda — cotação atualizada da moeda local para BRL
-Informações do país — capital, idioma, população e continente
-Perfil do usuário — histórico de pesquisas com gráficos e mapa interativo de países visitados
-Favoritos — salve e gerencie seus destinos preferidos
-Autenticação — cadastro e login com JWT
+## Funcionalidades
+
+- **Busca semântica** — pesquise em português ou inglês: "país frio", "fala árabe", "ilhas no Pacífico"
+- **Clima em tempo real** — temperatura, sensação térmica e umidade via OpenWeatherMap
+- **Conversão de moeda** — cotação atualizada para BRL via ExchangeRate API
+- **Informações do país** — capital, idioma, moeda e continente (250+ países, dados offline)
+- **Perfil do usuário** — histórico de pesquisas, mapa interativo, estatísticas por continente
+- **Favoritos e visitados** — gerencie e compartilhe seu perfil público
+- **Autenticação** — cadastro e login com JWT
 
 ## Stack
 
@@ -17,17 +18,16 @@ Autenticação — cadastro e login com JWT
 
 | Pacote | Tecnologias |
 |--------|-------------|
-| `apps/backend` | NestJS, TypeScript, @nestjs/axios, @nestjs/config |
-| `apps/frontend` | React 19, TypeScript, Vite, TanStack Router, TailwindCSS, shadcn/ui |
+| `apps/backend` | NestJS · Prisma · PostgreSQL · JWT · MiniSearch + PorterStemmerPt |
+| `apps/frontend` | React 19 · Vite · TanStack Router/Query · Tailwind CSS v4 · Radix UI · Geist |
+| `packages/shared` | TypeScript · Zod (tipos e schemas compartilhados) |
 
-**APIs externas:** OpenWeatherMap · RestCountries · ExchangeRate
+**APIs externas:** OpenWeatherMap · ExchangeRate API · flagcdn.com  
+**Dados de países:** `world-countries` npm (offline, sem API key)
 
 ---
 
 ## Como rodar localmente
-
-O backend roda em **Docker**, conectado ao Postgres **compartilhado no Railway** (ambiente `dev`).
-Ninguém precisa rodar `prisma generate` ou `prisma migrate` manualmente — o container faz tudo no boot.
 
 ### 1. Clone o repositório
 
@@ -38,16 +38,13 @@ cd EasyTrip
 
 ### 2. Configure o `.env` do backend
 
-Copie o exemplo e preencha:
-
 ```bash
 cp apps/backend/.env.example apps/backend/.env
 ```
 
-Peça a `DATABASE_URL` ao dono do projeto (ou pegue no Railway:
-`easytrip` → env `dev` → serviço `Postgres` → Variables → `DATABASE_PUBLIC_URL`).
+Preencha `DATABASE_URL`, `OPENWEATHER_API_KEY` e `EXCHANGERATE_API_KEY`.
 
-### 3. Instale dependências do monorepo (para o frontend rodar local)
+### 3. Instale dependências
 
 ```bash
 npm install
@@ -57,24 +54,19 @@ npm install
 
 ```bash
 npm run backend:up       # build + start em background
-npm run backend:logs     # acompanha logs (Ctrl+C pra sair, container segue rodando)
+npm run backend:logs     # acompanha logs
 ```
 
-No boot o container executa:
-1. `prisma generate`
-2. `prisma migrate deploy` (aplica migrations pendentes no Railway)
-3. `nest start --watch`
+No boot o container executa `prisma generate`, `prisma migrate deploy` e `nest start --watch`.
 
-Hot-reload: edições em `apps/backend/src`, `apps/backend/prisma` e `packages/shared/src` refletem automaticamente.
-
-### 5. Rode o frontend local
+### 5. Rode o frontend
 
 ```bash
 npm run dev --workspace=@easytrip/frontend
 ```
 
 - **Backend** (Docker): `http://localhost:3000`
-- **Frontend** (Vite): `http://localhost:5173` (proxy `/api` → `:3000`)
+- **Frontend** (Vite): `http://localhost:5173`
 
 ---
 
@@ -82,16 +74,32 @@ npm run dev --workspace=@easytrip/frontend
 
 | Comando | Descrição |
 |---------|-----------|
-| `npm run backend:up` | Build + start do backend em Docker (conecta no Railway) |
+| `npm run backend:up` | Build + start do backend em Docker |
 | `npm run backend:down` | Para o backend |
-| `npm run backend:logs` | Tail dos logs do backend |
-| `npm run backend:rebuild` | Rebuild completo da imagem (use após mudar `package.json`/`Dockerfile`) |
-| `npm run db:test:up` | Sobe Postgres local em tmpfs (porta 5433) pra rodar testes |
-| `npm run db:test:down` | Para o Postgres de teste |
-| `npm run dev` | Backend + frontend em paralelo com hot-reload (sem Docker) |
-| `npm run build` | Build de todos os pacotes (com cache Turborepo) |
-| `npm run lint` | Lint em todos os pacotes |
+| `npm run backend:logs` | Tail dos logs |
+| `npm run backend:rebuild` | Rebuild completo da imagem |
+| `npm run dev` | Backend + frontend em paralelo (sem Docker) |
+| `npm run build` | Build de todos os pacotes |
 | `npm run test` | Testes em todos os pacotes |
+| `npm run lint` | Lint em todos os pacotes |
+
+---
+
+## Testes
+
+O backend tem cobertura de testes unitários com Jest:
+
+| Métrica | Cobertura |
+|---------|-----------|
+| Statements | ~98% |
+| Branches | ~80% |
+| Functions | ~99% |
+| Lines | ~99% |
+
+```bash
+cd apps/backend
+npx jest --coverage
+```
 
 ---
 
@@ -100,10 +108,13 @@ npm run dev --workspace=@easytrip/frontend
 ```
 EasyTrip/
 ├── apps/
-│   ├── backend/        NestJS — serve API em /api/destination/:name
+│   ├── backend/        NestJS API — auth, países, clima, câmbio, busca semântica
 │   └── frontend/       React + Vite — interface do usuário
+├── packages/
+│   └── shared/         Tipos TypeScript e schemas Zod compartilhados
+├── CLAUDE.md           Guia de arquitetura e padrões de código
 ├── turbo.json          Pipeline do Turborepo
-└── package.json        Workspaces npm
+└── docker-compose.yml  PostgreSQL local
 ```
 
 ---
@@ -112,17 +123,16 @@ EasyTrip/
 
 | Variável | Descrição |
 |----------|-----------|
+| `DATABASE_URL` | Connection string do PostgreSQL |
+| `JWT_SECRET` | Segredo para assinar tokens JWT |
 | `OPENWEATHER_API_KEY` | Chave da [OpenWeatherMap API](https://openweathermap.org/api) |
 | `EXCHANGERATE_API_KEY` | Chave da [ExchangeRate API](https://www.exchangerate-api.com) |
 | `PORT` | Porta do backend (padrão: `3000`) |
-
-As chaves de API não são armazenadas no repositório. Caso alguma tenha sido exposta, revogue imediatamente e gere uma nova.
 
 ---
 
 ## Contribuição
 
-1. Crie uma branch (`git checkout -b feature/minha-feature`)
-2. Commit suas alterações
-3. Push para a branch (`git push origin feature/minha-feature`)
-4. Abra um Pull Request
+1. Crie uma branch: `git checkout -b feature/minha-feature`
+2. Commit: siga [Conventional Commits](https://www.conventionalcommits.org/)
+3. Abra um Pull Request

@@ -37,38 +37,46 @@ export function HomePage() {
   const isLoading = semanticLoading || destLoading
 
   return (
-    <div className="min-h-[calc(100vh-57px)] flex flex-col items-center justify-start px-4 pt-16 pb-16">
-      <div className="w-full max-w-xl">
-        <AppHeader />
-        <SearchBar onSearch={handleSearch} disabled={isLoading} />
+    <>
+      {/* Ambient glow behind hero */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse 70% 40% at 50% 0%, rgba(79,142,247,0.07) 0%, transparent 65%)' }}
+      />
 
-        <SearchHistory history={history} onSelect={handleSearch} onClear={clear} />
-        <RecommendationsStrip items={recs} onSelect={handleSearch} />
+      <div className="relative min-h-[calc(100vh-56px)] flex flex-col items-center px-4 sm:px-6 pt-14 pb-20">
+        <div className="w-full max-w-2xl">
+          <AppHeader />
+          <SearchBar onSearch={handleSearch} disabled={isLoading} />
 
-        {isLoading && <DestinationSkeleton />}
+          <SearchHistory history={history} onSelect={handleSearch} onClear={clear} />
+          <RecommendationsStrip items={recs} onSelect={handleSearch} />
 
-        {semanticError && (
-          <Alert
-            className="border-0"
-            style={{
-              background: 'rgba(239,68,68,0.1)',
-              border: '1px solid rgba(239,68,68,0.25)',
-              color: '#f87171',
-            }}
-          >
-            <AlertDescription className="text-sm">{semanticError}</AlertDescription>
-          </Alert>
-        )}
+          {isLoading && <DestinationSkeleton />}
 
-        {semanticData && (
-          <SemanticSearchResults
-            items={semanticData}
-            onSelect={handleSelectFromSemantic}
-          />
-        )}
+          {semanticError && (
+            <Alert
+              className="border-0 mb-4"
+              style={{
+                background: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.2)',
+                color: '#f87171',
+              }}
+            >
+              <AlertDescription className="text-sm">{semanticError}</AlertDescription>
+            </Alert>
+          )}
 
-        {data && <DestinationCard data={data} />}
+          {semanticData && !isLoading && (
+            <SemanticSearchResults
+              items={semanticData}
+              onSelect={handleSelectFromSemantic}
+            />
+          )}
+
+          {data && !isLoading && <DestinationCard data={data} />}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

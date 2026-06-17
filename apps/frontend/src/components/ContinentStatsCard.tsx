@@ -1,15 +1,16 @@
+import { BarChart2 } from 'lucide-react'
 import type { StatsPerContinent } from '@easytrip/shared'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useContinentStats } from '@/hooks/useContinentStats'
 
-const CONTINENT_LABEL_PT: Record<string, string> = {
-  Africa: 'África',
-  Antarctica: 'Antártida',
-  Asia: 'Ásia',
-  Europe: 'Europa',
-  'North America': 'América do Norte',
-  Oceania: 'Oceania',
-  'South America': 'América do Sul',
+const CONTINENT_PT: Record<string, string> = {
+  Africa:         'África',
+  Antarctica:     'Antártida',
+  Asia:           'Ásia',
+  Europe:         'Europa',
+  Americas:       'Américas',
+  'North America':'América do Norte',
+  Oceania:        'Oceania',
+  'South America':'América do Sul',
 }
 
 interface ContinentStatsCardProps {
@@ -18,62 +19,70 @@ interface ContinentStatsCardProps {
 }
 
 export function ContinentStatsCard({ data, heading }: ContinentStatsCardProps = {}) {
-  const self = useContinentStats()
+  const self  = useContinentStats()
   const stats = data ?? self.data
 
   return (
-    <Card
-      className="border-0"
-      style={{
-        background: '#16181f',
-        border: '1px solid rgba(255,255,255,0.07)',
-      }}
-    >
-      <CardHeader>
+    <div className="et-card p-5 flex flex-col gap-4">
+      <div className="flex items-center gap-2">
+        <BarChart2 size={16} style={{ color: '#7dd3fc' }} />
         <h2
-          className="text-xl font-semibold"
-          style={{ color: '#f0f2f8', fontFamily: '"Instrument Serif", serif' }}
+          className="text-lg font-normal"
+          style={{ color: '#f0f2f8' }}
         >
-          {heading ?? 'Países visitados por continente'}
+          {heading ?? 'Por continente'}
         </h2>
-        <p className="text-xs" style={{ color: '#7c8194' }}>
-          Total: {stats?.totalVisited ?? 0}
-        </p>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {!stats && self.isLoading && (
-          <p style={{ color: '#7c8194' }}>Carregando...</p>
+        {stats && (
+          <span className="et-label ml-auto">
+            {stats.totalVisited} visitado{stats.totalVisited !== 1 ? 's' : ''}
+          </span>
         )}
-        {stats?.perContinent.map((row) => (
-          <div key={row.continent} className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-xs">
-              <span style={{ color: '#f0f2f8' }}>
-                {CONTINENT_LABEL_PT[row.continent] ?? row.continent}
-              </span>
-              <span style={{ color: '#7c8194' }}>
-                {row.visited}/{row.total} ({row.percent}%)
-              </span>
+      </div>
+
+      {!stats && self.isLoading && (
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex flex-col gap-1.5">
+              <div className="et-shimmer h-2.5 w-28 rounded" />
+              <div className="et-progress-track">
+                <div className="et-progress-fill" style={{ width: '0%' }} />
+              </div>
             </div>
-            <div
-              className="h-2 rounded-full overflow-hidden"
-              style={{ background: '#1e2029' }}
-              role="progressbar"
-              aria-valuenow={row.percent}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`${row.continent} ${row.percent}%`}
-            >
-              <div
-                className="h-full"
-                style={{
-                  width: `${Math.min(100, row.percent)}%`,
-                  background: 'linear-gradient(90deg, #4f8ef7, #7dd3fc)',
-                }}
-              />
-            </div>
+          ))}
+        </div>
+      )}
+
+      {stats?.perContinent.map((row) => (
+        <div key={row.continent} className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <span style={{ color: '#f0f2f8' }}>
+              {CONTINENT_PT[row.continent] ?? row.continent}
+            </span>
+            <span style={{ color: '#7c8194' }}>
+              {row.visited}/{row.total}
+              <span
+                className="ml-1.5 font-medium"
+                style={{ color: row.percent > 0 ? '#7dd3fc' : '#4e5468' }}
+              >
+                {row.percent}%
+              </span>
+            </span>
           </div>
-        ))}
-      </CardContent>
-    </Card>
+          <div
+            className="et-progress-track"
+            role="progressbar"
+            aria-valuenow={row.percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`${row.continent} ${row.percent}%`}
+          >
+            <div
+              className="et-progress-fill"
+              style={{ width: `${Math.min(100, row.percent)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }

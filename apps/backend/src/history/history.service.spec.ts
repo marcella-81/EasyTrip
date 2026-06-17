@@ -108,4 +108,24 @@ describe('HistoryService', () => {
       NotFoundException,
     );
   });
+
+  it('list retorna entradas mapeadas', async () => {
+    prisma.searchHistory.findMany.mockResolvedValueOnce([makeRow('h1', 'u1')]);
+    const res = await service.list('u1');
+    expect(res).toHaveLength(1);
+    expect(res[0]).toMatchObject({ id: 'h1', userId: 'u1', cca2: 'ES' });
+  });
+
+  it('deleteAll chama deleteMany corretamente', async () => {
+    prisma.searchHistory.deleteMany.mockResolvedValueOnce({ count: 3 });
+    await service.deleteAll('u1');
+    expect(prisma.searchHistory.deleteMany).toHaveBeenCalledWith({ where: { userId: 'u1' } });
+  });
+
+  it('deleteById deleta com sucesso quando pertence ao usuário', async () => {
+    prisma.searchHistory.findUnique.mockResolvedValueOnce(makeRow('h1', 'u1'));
+    prisma.searchHistory.delete.mockResolvedValueOnce(makeRow('h1', 'u1'));
+    await service.deleteById('u1', 'h1');
+    expect(prisma.searchHistory.delete).toHaveBeenCalledWith({ where: { id: 'h1' } });
+  });
 });

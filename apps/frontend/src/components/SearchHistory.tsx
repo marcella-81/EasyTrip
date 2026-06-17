@@ -1,5 +1,4 @@
-import { Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { X } from 'lucide-react'
 
 interface SearchHistoryProps {
   history: string[]
@@ -11,41 +10,27 @@ export function SearchHistory({ history, onSelect, onClear }: SearchHistoryProps
   if (history.length === 0) return null
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs uppercase tracking-wider font-medium" style={{ color: '#7c8194' }}>
-          Histórico
-        </span>
-        <Button
-          variant="ghost"
-          size="sm"
+    <div className="mb-5">
+      <div className="flex items-center justify-between mb-2.5">
+        <p className="et-label">Buscas recentes</p>
+        <button
+          type="button"
           onClick={onClear}
-          className="h-6 px-2 gap-1 text-xs cursor-pointer hover:text-red-400"
-          style={{ color: '#7c8194' }}
+          className="flex items-center gap-1 text-[11px] transition-colors cursor-pointer"
+          style={{ color: '#4e5468' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#f87171' }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = '#4e5468' }}
         >
-          <Trash2 size={12} />
-          Limpar
-        </Button>
+          <X size={11} /> Limpar
+        </button>
       </div>
       <div className="flex flex-wrap gap-2">
         {history.map((item) => (
           <button
             key={item}
+            type="button"
             onClick={() => onSelect(item)}
-            className="text-xs px-3 py-1.5 rounded-full transition-colors cursor-pointer"
-            style={{
-              background: '#1e2029',
-              color: '#7c8194',
-              border: '1px solid rgba(255,255,255,0.07)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#f0f2f8'
-              e.currentTarget.style.borderColor = 'rgba(79,142,247,0.3)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#7c8194'
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'
-            }}
+            className="et-chip"
           >
             {item}
           </button>
