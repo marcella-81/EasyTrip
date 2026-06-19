@@ -12,7 +12,7 @@ export class DestinationService {
   ) {}
 
   async getDestination(name: string) {
-    const pais = await this.countryService.getCountryInfo(name);
+    const pais = this.countryService.getCountryInfo(name);
     const clima = await this.weatherService.getWeather(pais.capital);
     const cambio = await this.exchangeService.convertToBRL(pais.codigoMoeda);
 

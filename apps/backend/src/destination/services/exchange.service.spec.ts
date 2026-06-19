@@ -23,13 +23,21 @@ describe('ExchangeService', () => {
     const http = { get: jest.fn() };
     const config = { get: jest.fn().mockReturnValue(undefined) };
     const svc = new ExchangeService(http as never, config as never);
-    await expect(svc.convertToBRL('JPY')).rejects.toBeInstanceOf(InternalServerErrorException);
+    await expect(svc.convertToBRL('JPY')).rejects.toBeInstanceOf(
+      InternalServerErrorException,
+    );
   });
 
   it('lança InternalServerErrorException em falha HTTP', async () => {
-    const http = { get: jest.fn().mockReturnValue(throwError(() => new Error('network error'))) };
+    const http = {
+      get: jest
+        .fn()
+        .mockReturnValue(throwError(() => new Error('network error'))),
+    };
     const config = { get: jest.fn().mockReturnValue('key') };
     const svc = new ExchangeService(http as never, config as never);
-    await expect(svc.convertToBRL('USD')).rejects.toBeInstanceOf(InternalServerErrorException);
+    await expect(svc.convertToBRL('USD')).rejects.toBeInstanceOf(
+      InternalServerErrorException,
+    );
   });
 });

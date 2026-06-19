@@ -18,7 +18,11 @@ describe('WishlistController', () => {
   });
 
   it('add delega para service.add', async () => {
-    const dto = { cca2: 'BR', countryName: 'Brazil', continent: 'South America' };
+    const dto = {
+      cca2: 'BR',
+      countryName: 'Brazil',
+      continent: 'South America',
+    };
     service.add.mockResolvedValue(dto);
     await ctrl.add(USER, dto);
     expect(service.add).toHaveBeenCalledWith('u1', dto);

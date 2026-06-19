@@ -1,7 +1,9 @@
 import { StatsService } from './stats.service';
 
 describe('StatsService', () => {
-  function makeService(groupResult: Array<{ continent: string; count: number }>) {
+  function makeService(
+    groupResult: Array<{ continent: string; count: number }>,
+  ) {
     const prisma = {
       visitedCountry: {
         groupBy: jest.fn().mockResolvedValue(
@@ -43,6 +45,8 @@ describe('StatsService', () => {
     ]);
     const res = await svc.continents('u1');
     expect(res.totalVisited).toBe(8);
-    expect(res.perContinent.find((r) => r.continent === 'Asia')?.visited).toBe(5);
+    expect(res.perContinent.find((r) => r.continent === 'Asia')?.visited).toBe(
+      5,
+    );
   });
 });

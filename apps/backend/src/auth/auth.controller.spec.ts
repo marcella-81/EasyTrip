@@ -8,8 +8,12 @@ describe('AuthController', () => {
 
   beforeEach(() => {
     service = {
-      register: jest.fn().mockResolvedValue({ user: USER, tokens: { accessToken: 'tok' } }),
-      login: jest.fn().mockResolvedValue({ user: USER, tokens: { accessToken: 'tok' } }),
+      register: jest
+        .fn()
+        .mockResolvedValue({ user: USER, tokens: { accessToken: 'tok' } }),
+      login: jest
+        .fn()
+        .mockResolvedValue({ user: USER, tokens: { accessToken: 'tok' } }),
       me: jest.fn().mockResolvedValue(USER),
     };
     ctrl = new AuthController(service as never);

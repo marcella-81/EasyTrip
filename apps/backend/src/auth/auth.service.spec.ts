@@ -5,7 +5,9 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 
 describe('AuthService', () => {
-  const jwt = { sign: jest.fn().mockReturnValue('signed.jwt.token') } as unknown as JwtService;
+  const jwt = {
+    sign: jest.fn().mockReturnValue('signed.jwt.token'),
+  } as unknown as JwtService;
   let users: jest.Mocked<UsersService>;
   let service: AuthService;
 
@@ -21,15 +23,18 @@ describe('AuthService', () => {
 
   it('register: cria hash e devolve token', async () => {
     users.findByEmail.mockResolvedValueOnce(null);
-    users.create.mockImplementationOnce(async (email: string, passwordHash: string) => ({
-      id: 'u1',
-      email,
-      passwordHash,
-      createdAt: new Date('2026-04-23T10:00:00Z'),
-    }));
+    users.create.mockImplementationOnce((email: string, passwordHash: string) =>
+      Promise.resolve({
+        id: 'u1',
+        email,
+        passwordHash,
+        createdAt: new Date('2026-04-23T10:00:00Z'),
+      }),
+    );
 
     const res = await service.register('a@b.com', 'secret123');
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(users.create).toHaveBeenCalledTimes(1);
     const [, passwordHash] = users.create.mock.calls[0];
     expect(passwordHash).not.toBe('secret123');
@@ -45,9 +50,9 @@ describe('AuthService', () => {
       passwordHash: 'x',
       createdAt: new Date(),
     });
-    await expect(service.register('a@b.com', 'secret123')).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    await expect(
+      service.register('a@b.com', 'secret123'),
+    ).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('login: 401 em senha errada', async () => {
@@ -77,9 +82,9 @@ describe('AuthService', () => {
 
   it('login: 401 em email inexistente', async () => {
     users.findByEmail.mockResolvedValueOnce(null);
-    await expect(service.login('none@b.com', 'secret123')).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(
+      service.login('none@b.com', 'secret123'),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('me: retorna usuário público quando encontrado', async () => {
@@ -95,6 +100,8 @@ describe('AuthService', () => {
 
   it('me: 401 quando usuário não existe', async () => {
     users.findById.mockResolvedValueOnce(null);
-    await expect(service.me('ghost')).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(service.me('ghost')).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
   });
 });

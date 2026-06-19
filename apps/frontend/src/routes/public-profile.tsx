@@ -1,5 +1,5 @@
 import { useParams } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ArrowLeft, Heart, MapPin, TrendingUp } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -16,12 +16,9 @@ import { getCountryFlag } from '@/lib/flags'
 export function PublicProfilePage() {
   const { id } = useParams({ from: '/profile/$id' })
   const { isAuthenticated, loading: authLoading } = useAuth()
-  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
+  const authModalOpen = !authLoading && !isAuthenticated && !dismissed
   const { data, isLoading } = usePublicProfile(id)
-
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) setAuthModalOpen(true)
-  }, [authLoading, isAuthenticated])
 
   if (authLoading) {
     return (
@@ -63,7 +60,7 @@ export function PublicProfilePage() {
         </div>
         <AuthRequiredDialog
           open={authModalOpen}
-          onOpenChange={setAuthModalOpen}
+          onOpenChange={() => setDismissed(true)}
           title="Faça login para ver este perfil"
           description="Este link leva a um perfil de viagens no EasyTrip. Crie uma conta para descobrir países, estatísticas e recomendações."
         />

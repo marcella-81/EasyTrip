@@ -13,7 +13,7 @@ export class WishlistService {
       where: { userId },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map(this.toDTO);
+    return rows.map((r) => this.toDTO(r));
   }
 
   async add(userId: string, dto: AddWishlistDto): Promise<WishlistItem> {

@@ -2,21 +2,23 @@ jest.mock('natural', () => ({ PorterStemmerPt: { stem: (t: string) => t } }));
 
 import { FullTextSearchService } from './full-text-search.service';
 
-function makeCountry(overrides: Partial<{
-  cca2: string;
-  cca3: string;
-  name: string;
-  continent: string;
-  subregion: string;
-  capital: string;
-  languages: string[];
-  currencies: string[];
-  currencyDetails: { code: string; name: string; symbol: string }[];
-  landlocked: boolean;
-  latlng: [number, number];
-  flag: string;
-  altSpellings: string[];
-}> = {}) {
+function makeCountry(
+  overrides: Partial<{
+    cca2: string;
+    cca3: string;
+    name: string;
+    continent: string;
+    subregion: string;
+    capital: string;
+    languages: string[];
+    currencies: string[];
+    currencyDetails: { code: string; name: string; symbol: string }[];
+    landlocked: boolean;
+    latlng: [number, number];
+    flag: string;
+    altSpellings: string[];
+  }> = {},
+) {
   return {
     cca2: overrides.cca2 ?? 'BR',
     cca3: overrides.cca3 ?? 'BRA',
@@ -26,9 +28,11 @@ function makeCountry(overrides: Partial<{
     capital: overrides.capital ?? 'Brasília',
     languages: overrides.languages ?? ['Portuguese'],
     currencies: overrides.currencies ?? ['BRL'],
-    currencyDetails: overrides.currencyDetails ?? [{ code: 'BRL', name: 'Brazilian real', symbol: 'R$' }],
+    currencyDetails: overrides.currencyDetails ?? [
+      { code: 'BRL', name: 'Brazilian real', symbol: 'R$' },
+    ],
     landlocked: overrides.landlocked ?? false,
-    latlng: overrides.latlng ?? [-15, -47] as [number, number],
+    latlng: overrides.latlng ?? ([-15, -47] as [number, number]),
     flag: overrides.flag ?? 'https://flagcdn.com/br.svg',
     altSpellings: overrides.altSpellings ?? ['BR', 'Brasil'],
   };
@@ -73,9 +77,33 @@ describe('FullTextSearchService', () => {
 
     beforeEach(async () => {
       svc = makeService([
-        makeCountry({ cca2: 'BR', name: 'Brazil', altSpellings: ['BR', 'Brasil'] }),
-        makeCountry({ cca2: 'JP', name: 'Japan', continent: 'Asia', subregion: 'Eastern Asia', languages: ['Japanese'], currencies: ['JPY'], currencyDetails: [], altSpellings: ['JP', 'Nippon'], latlng: [36, 138] }),
-        makeCountry({ cca2: 'FR', name: 'France', continent: 'Europe', subregion: 'Western Europe', languages: ['French'], currencies: ['EUR'], currencyDetails: [], altSpellings: ['FR'], latlng: [46, 2] }),
+        makeCountry({
+          cca2: 'BR',
+          name: 'Brazil',
+          altSpellings: ['BR', 'Brasil'],
+        }),
+        makeCountry({
+          cca2: 'JP',
+          name: 'Japan',
+          continent: 'Asia',
+          subregion: 'Eastern Asia',
+          languages: ['Japanese'],
+          currencies: ['JPY'],
+          currencyDetails: [],
+          altSpellings: ['JP', 'Nippon'],
+          latlng: [36, 138],
+        }),
+        makeCountry({
+          cca2: 'FR',
+          name: 'France',
+          continent: 'Europe',
+          subregion: 'Western Europe',
+          languages: ['French'],
+          currencies: ['EUR'],
+          currencyDetails: [],
+          altSpellings: ['FR'],
+          latlng: [46, 2],
+        }),
       ]);
       await svc.buildIndex();
     });

@@ -13,13 +13,10 @@ export class VisitedService {
       where: { userId },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map(this.toDTO);
+    return rows.map((r) => this.toDTO(r));
   }
 
-  async add(
-    userId: string,
-    dto: AddVisitedDto,
-  ): Promise<SharedVisitedCountry> {
+  async add(userId: string, dto: AddVisitedDto): Promise<SharedVisitedCountry> {
     const cca2 = dto.cca2.toUpperCase();
     try {
       const created = await this.prisma.visitedCountry.create({

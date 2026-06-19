@@ -35,7 +35,8 @@ export class DestinationController {
   @ApiParam({
     name: 'name',
     example: 'Brazil',
-    description: 'Nome do país em inglês (ou formato aceito pelo RestCountries)',
+    description:
+      'Nome do país em inglês (ou formato aceito pelo RestCountries)',
   })
   getDestination(@Param('name') name: string) {
     return this.destinationService.getDestination(name);

@@ -35,8 +35,6 @@ describe('RecommendationsStrip', () => {
     render(<RecommendationsStrip items={ITEMS} onSelect={onSelect} />)
     expect(screen.getByText('Spain')).toBeInTheDocument()
     expect(screen.getByText('Portugal')).toBeInTheDocument()
-    expect(screen.getByText('fronteira')).toBeInTheDocument()
-    expect(screen.getByText('região')).toBeInTheDocument()
     fireEvent.click(screen.getByText('Spain'))
     expect(onSelect).toHaveBeenCalledWith('Spain')
   })

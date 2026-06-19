@@ -27,16 +27,20 @@ export function DestinationCard({ data }: DestinationCardProps) {
 
   async function toggleWishlist() {
     if (!cca2) return
-    inWishlist
-      ? await wishlist.remove(cca2)
-      : await wishlist.add({ cca2, countryName: destino, continent: informacoesDoPais.continente })
+    if (inWishlist) {
+      await wishlist.remove(cca2)
+    } else {
+      await wishlist.add({ cca2, countryName: destino, continent: informacoesDoPais.continente })
+    }
   }
 
   async function toggleVisited() {
     if (!cca2) return
-    inVisited
-      ? await visited.remove(cca2)
-      : await visited.add({ cca2, countryName: destino, continent: informacoesDoPais.continente })
+    if (inVisited) {
+      await visited.remove(cca2)
+    } else {
+      await visited.add({ cca2, countryName: destino, continent: informacoesDoPais.continente })
+    }
   }
 
   return (

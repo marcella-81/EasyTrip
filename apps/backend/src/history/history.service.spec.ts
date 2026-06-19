@@ -1,7 +1,11 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { HistoryService } from './history.service';
 
-function makeRow(id: string, userId: string, overrides: Partial<{ cca2: string; query: string; countryName: string }> = {}) {
+function makeRow(
+  id: string,
+  userId: string,
+  overrides: Partial<{ cca2: string; query: string; countryName: string }> = {},
+) {
   return {
     id,
     userId,
@@ -40,7 +44,7 @@ describe('HistoryService', () => {
   });
 
   it('addFromQuery resolve country + salva + trima para 8', async () => {
-    countries.getByName.mockResolvedValueOnce({
+    countries.getByName.mockReturnValueOnce({
       cca2: 'ES',
       cca3: 'ESP',
       name: 'Spain',
@@ -72,7 +76,7 @@ describe('HistoryService', () => {
   it('addBulk ignora não-encontrados e deduplica', async () => {
     countries.getByName.mockImplementation((q: string) => {
       if (q.toLowerCase() === 'spain') {
-        return Promise.resolve({
+        return {
           cca2: 'ES',
           cca3: 'ESP',
           name: 'Spain',
@@ -80,12 +84,13 @@ describe('HistoryService', () => {
           region: 'Europe',
           subregion: 'Southern Europe',
           borders: [],
-        });
+        };
       }
-      return Promise.reject(new NotFoundException());
+      throw new NotFoundException();
     });
-    prisma.searchHistory.create.mockImplementation(({ data }: { data: { cca2: string } }) =>
-      Promise.resolve(makeRow('hx', 'u1', { cca2: data.cca2 })),
+    prisma.searchHistory.create.mockImplementation(
+      ({ data }: { data: { cca2: string } }) =>
+        Promise.resolve(makeRow('hx', 'u1', { cca2: data.cca2 })),
     );
     prisma.searchHistory.findMany.mockResolvedValue([]);
 
@@ -95,7 +100,9 @@ describe('HistoryService', () => {
   });
 
   it('deleteById bloqueia entrada de outro usuário', async () => {
-    prisma.searchHistory.findUnique.mockResolvedValueOnce(makeRow('h1', 'other-user'));
+    prisma.searchHistory.findUnique.mockResolvedValueOnce(
+      makeRow('h1', 'other-user'),
+    );
     await expect(service.deleteById('u1', 'h1')).rejects.toBeInstanceOf(
       ForbiddenException,
     );
@@ -119,13 +126,17 @@ describe('HistoryService', () => {
   it('deleteAll chama deleteMany corretamente', async () => {
     prisma.searchHistory.deleteMany.mockResolvedValueOnce({ count: 3 });
     await service.deleteAll('u1');
-    expect(prisma.searchHistory.deleteMany).toHaveBeenCalledWith({ where: { userId: 'u1' } });
+    expect(prisma.searchHistory.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'u1' },
+    });
   });
 
   it('deleteById deleta com sucesso quando pertence ao usuário', async () => {
     prisma.searchHistory.findUnique.mockResolvedValueOnce(makeRow('h1', 'u1'));
     prisma.searchHistory.delete.mockResolvedValueOnce(makeRow('h1', 'u1'));
     await service.deleteById('u1', 'h1');
-    expect(prisma.searchHistory.delete).toHaveBeenCalledWith({ where: { id: 'h1' } });
+    expect(prisma.searchHistory.delete).toHaveBeenCalledWith({
+      where: { id: 'h1' },
+    });
   });
 });

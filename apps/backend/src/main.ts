@@ -34,7 +34,8 @@ async function bootstrap() {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        description: 'Cole o accessToken retornado por /auth/login ou /auth/register',
+        description:
+          'Cole o accessToken retornado por /auth/login ou /auth/register',
       },
       'jwt',
     )
@@ -45,7 +46,10 @@ async function bootstrap() {
     .addTag('Recommendations', 'Sugestões por fronteira e sub-região')
     .addTag('Stats', 'Estatísticas de visitação por continente')
     .addTag('Users', 'Perfis públicos compartilháveis')
-    .addTag('Destination', 'Busca de informações do destino (país + clima + câmbio)')
+    .addTag(
+      'Destination',
+      'Busca de informações do destino (país + clima + câmbio)',
+    )
     .build();
 
   const swaggerDoc = SwaggerModule.createDocument(app, swaggerConfig);
@@ -74,4 +78,4 @@ async function bootstrap() {
   console.log(`🌍 Servidor rodando em http://localhost:${port}`);
   console.log(`📘 Swagger UI em http://localhost:${port}/api/docs`);
 }
-bootstrap();
+void bootstrap();
