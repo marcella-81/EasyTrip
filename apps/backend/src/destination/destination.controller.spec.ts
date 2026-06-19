@@ -8,9 +8,14 @@ describe('DestinationController', () => {
   let ctrl: DestinationController;
 
   beforeEach(() => {
-    destinationService = { getDestination: jest.fn().mockResolvedValue({ destino: 'Brazil' }) };
+    destinationService = {
+      getDestination: jest.fn().mockResolvedValue({ destino: 'Brazil' }),
+    };
     semanticService = { search: jest.fn().mockResolvedValue([]) };
-    ctrl = new DestinationController(destinationService as never, semanticService as never);
+    ctrl = new DestinationController(
+      destinationService as never,
+      semanticService as never,
+    );
   });
 
   it('semanticSearch delega para semanticSearchService.search', async () => {

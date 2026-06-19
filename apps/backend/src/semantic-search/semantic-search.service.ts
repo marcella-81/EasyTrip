@@ -35,7 +35,9 @@ export class SemanticSearchService {
     const ftsHits = await this.fts.search(query);
 
     if (ftsHits.length === 0) {
-      this.logger.debug(`Sem resultados FTS para "${query}", usando fallback por nome`);
+      this.logger.debug(
+        `Sem resultados FTS para "${query}", usando fallback por nome`,
+      );
       return this.fallbackNameSearch(all, query.toLowerCase().trim());
     }
 

@@ -38,7 +38,9 @@ export class FullTextSearchService implements OnModuleInit {
     const all = this.countries.getAll();
 
     if (all.length === 0) {
-      this.logger.warn('buildIndex: no countries available, will retry on first search');
+      this.logger.warn(
+        'buildIndex: no countries available, will retry on first search',
+      );
       return;
     }
 

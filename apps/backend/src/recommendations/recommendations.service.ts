@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  RecommendationItem,
-  RecommendationReason,
-} from '@easytrip/shared';
+import { RecommendationItem, RecommendationReason } from '@easytrip/shared';
 import { CountriesService, CountryMeta } from '../countries/countries.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -37,10 +34,10 @@ export class RecommendationsService {
     const tally = new Map<string, Tally>();
 
     for (const entry of recent) {
-      const origin = await this.countries.getByCca2(entry.cca2);
+      const origin = this.countries.getByCca2(entry.cca2);
       if (!origin?.subregion) continue;
 
-      const siblings = await this.countries.getBySubregion(origin.subregion);
+      const siblings = this.countries.getBySubregion(origin.subregion);
       for (const sib of siblings) {
         if (sib.cca2 === origin.cca2 || excluded.has(sib.cca2)) continue;
         this.bump(tally, sib, WEIGHT_SUBREGION);

@@ -1,17 +1,72 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { RecommendationsService } from './recommendations.service';
 
 const SUBREGION = 'Western Europe';
 
 const META = {
-  FR: { cca2: 'FR', cca3: 'FRA', name: 'France', continent: 'Europe', subregion: SUBREGION },
-  DE: { cca2: 'DE', cca3: 'DEU', name: 'Germany', continent: 'Europe', subregion: SUBREGION },
-  BE: { cca2: 'BE', cca3: 'BEL', name: 'Belgium', continent: 'Europe', subregion: SUBREGION },
-  NL: { cca2: 'NL', cca3: 'NLD', name: 'Netherlands', continent: 'Europe', subregion: SUBREGION },
-  AT: { cca2: 'AT', cca3: 'AUT', name: 'Austria', continent: 'Europe', subregion: SUBREGION },
-  CH: { cca2: 'CH', cca3: 'CHE', name: 'Switzerland', continent: 'Europe', subregion: SUBREGION },
-  LU: { cca2: 'LU', cca3: 'LUX', name: 'Luxembourg', continent: 'Europe', subregion: SUBREGION },
-  MC: { cca2: 'MC', cca3: 'MCO', name: 'Monaco', continent: 'Europe', subregion: SUBREGION },
-  LI: { cca2: 'LI', cca3: 'LIE', name: 'Liechtenstein', continent: 'Europe', subregion: SUBREGION },
+  FR: {
+    cca2: 'FR',
+    cca3: 'FRA',
+    name: 'France',
+    continent: 'Europe',
+    subregion: SUBREGION,
+  },
+  DE: {
+    cca2: 'DE',
+    cca3: 'DEU',
+    name: 'Germany',
+    continent: 'Europe',
+    subregion: SUBREGION,
+  },
+  BE: {
+    cca2: 'BE',
+    cca3: 'BEL',
+    name: 'Belgium',
+    continent: 'Europe',
+    subregion: SUBREGION,
+  },
+  NL: {
+    cca2: 'NL',
+    cca3: 'NLD',
+    name: 'Netherlands',
+    continent: 'Europe',
+    subregion: SUBREGION,
+  },
+  AT: {
+    cca2: 'AT',
+    cca3: 'AUT',
+    name: 'Austria',
+    continent: 'Europe',
+    subregion: SUBREGION,
+  },
+  CH: {
+    cca2: 'CH',
+    cca3: 'CHE',
+    name: 'Switzerland',
+    continent: 'Europe',
+    subregion: SUBREGION,
+  },
+  LU: {
+    cca2: 'LU',
+    cca3: 'LUX',
+    name: 'Luxembourg',
+    continent: 'Europe',
+    subregion: SUBREGION,
+  },
+  MC: {
+    cca2: 'MC',
+    cca3: 'MCO',
+    name: 'Monaco',
+    continent: 'Europe',
+    subregion: SUBREGION,
+  },
+  LI: {
+    cca2: 'LI',
+    cca3: 'LIE',
+    name: 'Liechtenstein',
+    continent: 'Europe',
+    subregion: SUBREGION,
+  },
 } as const;
 
 function build(opts: {
@@ -33,12 +88,14 @@ function build(opts: {
       ),
     },
     wishlist: { findMany: jest.fn().mockResolvedValue(opts.wishlist ?? []) },
-    visitedCountry: { findMany: jest.fn().mockResolvedValue(opts.visited ?? []) },
+    visitedCountry: {
+      findMany: jest.fn().mockResolvedValue(opts.visited ?? []),
+    },
   };
 
   const countries = {
-    getByCca2: jest.fn(async (cca2: string) => (META as never)[cca2] ?? null),
-    getBySubregion: jest.fn(async (subregion: string) =>
+    getByCca2: jest.fn((cca2: string) => (META as never)[cca2] ?? null),
+    getBySubregion: jest.fn((subregion: string) =>
       Object.values(META).filter((m) => m.subregion === subregion),
     ),
   };
@@ -64,7 +121,10 @@ describe('RecommendationsService', () => {
   });
 
   it('exclui países em wishlist', async () => {
-    const svc = build({ history: [{ cca2: 'FR' }], wishlist: [{ cca2: 'DE' }] });
+    const svc = build({
+      history: [{ cca2: 'FR' }],
+      wishlist: [{ cca2: 'DE' }],
+    });
     const res = await svc.forUser('u1');
     expect(res.some((r) => r.cca2 === 'DE')).toBe(false);
   });
@@ -102,7 +162,14 @@ describe('RecommendationsService', () => {
     const prisma = {
       searchHistory: {
         findMany: jest.fn().mockResolvedValue([
-          { id: 'h0', userId: 'u1', cca2: 'XX', countryName: 'XX', query: 'XX', createdAt: new Date() },
+          {
+            id: 'h0',
+            userId: 'u1',
+            cca2: 'XX',
+            countryName: 'XX',
+            query: 'XX',
+            createdAt: new Date(),
+          },
         ]),
       },
       wishlist: { findMany: jest.fn().mockResolvedValue([]) },

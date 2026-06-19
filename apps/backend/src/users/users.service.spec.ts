@@ -23,7 +23,9 @@ describe('UsersService', () => {
     const user = makeUser();
     prisma.user.findUnique.mockResolvedValue(user);
     const res = await svc.findByEmail('test@example.com');
-    expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { email: 'test@example.com' } });
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { email: 'test@example.com' },
+    });
     expect(res).toEqual(user);
   });
 
@@ -36,7 +38,9 @@ describe('UsersService', () => {
     const user = makeUser({ id: 'u42' });
     prisma.user.findUnique.mockResolvedValue(user);
     const res = await svc.findById('u42');
-    expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: 'u42' } });
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { id: 'u42' },
+    });
     expect(res).toEqual(user);
   });
 

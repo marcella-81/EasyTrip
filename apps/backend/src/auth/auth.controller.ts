@@ -36,8 +36,16 @@ export class AuthController {
     type: AuthResponseDto,
     description: 'Criado com sucesso',
   })
-  @ApiResponse({ status: 400, type: ErrorResponseDto, description: 'Payload inválido' })
-  @ApiResponse({ status: 409, type: ErrorResponseDto, description: 'Email já cadastrado' })
+  @ApiResponse({
+    status: 400,
+    type: ErrorResponseDto,
+    description: 'Payload inválido',
+  })
+  @ApiResponse({
+    status: 409,
+    type: ErrorResponseDto,
+    description: 'Email já cadastrado',
+  })
   register(@Body() dto: RegisterDto): Promise<AuthResponse> {
     return this.auth.register(dto.email, dto.password);
   }
@@ -50,7 +58,10 @@ export class AuthController {
       'Recebe email + senha e retorna o access token que deve ser usado em `Authorization: Bearer <token>`.',
   })
   @ApiOkResponse({ type: AuthResponseDto })
-  @ApiUnauthorizedResponse({ type: ErrorResponseDto, description: 'Credenciais inválidas' })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    description: 'Credenciais inválidas',
+  })
   login(@Body() dto: LoginDto): Promise<AuthResponse> {
     return this.auth.login(dto.email, dto.password);
   }
@@ -60,7 +71,10 @@ export class AuthController {
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Retorna o usuário autenticado' })
   @ApiOkResponse({ type: UserResponseDto })
-  @ApiUnauthorizedResponse({ type: ErrorResponseDto, description: 'Token ausente ou inválido' })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    description: 'Token ausente ou inválido',
+  })
   me(@CurrentUser() user: AuthUser): Promise<SharedUser> {
     return this.auth.me(user.id);
   }

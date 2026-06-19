@@ -38,9 +38,9 @@ describe('ContinentStatsCard', () => {
     renderWithProviders(<ContinentStatsCard />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Total: 10/)).toBeInTheDocument()
+      expect(screen.getByText('10 visitados')).toBeInTheDocument()
     })
-    expect(screen.getByText('10/53 (18.9%)')).toBeInTheDocument()
+    expect(screen.getByText('18.9%')).toBeInTheDocument()
     const bars = screen.getAllByRole('progressbar')
     expect(bars).toHaveLength(7)
     const europe = bars.find((b) => b.getAttribute('aria-label')?.startsWith('Europe'))

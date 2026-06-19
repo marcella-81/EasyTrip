@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { InternalServerErrorException } from '@nestjs/common';
 import { of, throwError } from 'rxjs';
 import { WeatherService } from './weather.service';
@@ -28,7 +29,9 @@ describe('WeatherService', () => {
     const http = { get: jest.fn() };
     const config = { get: jest.fn().mockReturnValue(undefined) };
     const svc = new WeatherService(http as never, config as never);
-    await expect(svc.getWeather('Tokyo')).rejects.toBeInstanceOf(InternalServerErrorException);
+    await expect(svc.getWeather('Tokyo')).rejects.toBeInstanceOf(
+      InternalServerErrorException,
+    );
   });
 
   it('normaliza diacríticos na cidade (Brasília → Brasilia)', async () => {
@@ -39,9 +42,15 @@ describe('WeatherService', () => {
   });
 
   it('lança InternalServerErrorException em falha HTTP', async () => {
-    const http = { get: jest.fn().mockReturnValue(throwError(() => new Error('network error'))) };
+    const http = {
+      get: jest
+        .fn()
+        .mockReturnValue(throwError(() => new Error('network error'))),
+    };
     const config = { get: jest.fn().mockReturnValue('key') };
     const svc = new WeatherService(http as never, config as never);
-    await expect(svc.getWeather('Tokyo')).rejects.toBeInstanceOf(InternalServerErrorException);
+    await expect(svc.getWeather('Tokyo')).rejects.toBeInstanceOf(
+      InternalServerErrorException,
+    );
   });
 });

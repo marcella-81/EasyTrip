@@ -12,12 +12,18 @@ function makeContext(authHeader: string | undefined) {
 
 function makeGuard(opts: { jwtPayload?: object; userExists?: boolean } = {}) {
   const jwt = {
-    verify: jest.fn().mockReturnValue(opts.jwtPayload ?? { sub: 'u1', email: 'a@b.com' }),
+    verify: jest
+      .fn()
+      .mockReturnValue(opts.jwtPayload ?? { sub: 'u1', email: 'a@b.com' }),
   };
   const users = {
-    findById: jest.fn().mockResolvedValue(
-      opts.userExists === false ? null : { id: 'u1', email: 'a@b.com', role: 'USER' },
-    ),
+    findById: jest
+      .fn()
+      .mockResolvedValue(
+        opts.userExists === false
+          ? null
+          : { id: 'u1', email: 'a@b.com', role: 'USER' },
+      ),
   };
   return new JwtAuthGuard(jwt as never, users as never);
 }
@@ -31,32 +37,36 @@ describe('JwtAuthGuard', () => {
 
   it('lança UnauthorizedException sem header', async () => {
     const guard = makeGuard();
-    await expect(guard.canActivate(makeContext(undefined))).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(
+      guard.canActivate(makeContext(undefined)),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('lança UnauthorizedException com header sem "Bearer "', async () => {
     const guard = makeGuard();
-    await expect(guard.canActivate(makeContext('Basic abc'))).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(
+      guard.canActivate(makeContext('Basic abc')),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('lança UnauthorizedException quando jwt.verify lança', async () => {
-    const jwt = { verify: jest.fn().mockImplementation(() => { throw new Error('bad token'); }) };
+    const jwt = {
+      verify: jest.fn().mockImplementation(() => {
+        throw new Error('bad token');
+      }),
+    };
     const users = { findById: jest.fn() };
     const guard = new JwtAuthGuard(jwt as never, users as never);
-    await expect(guard.canActivate(makeContext('Bearer bad'))).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(
+      guard.canActivate(makeContext('Bearer bad')),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('lança UnauthorizedException quando usuário não existe', async () => {
     const guard = makeGuard({ userExists: false });
-    await expect(guard.canActivate(makeContext('Bearer valid'))).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(
+      guard.canActivate(makeContext('Bearer valid')),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('injeta user no request', async () => {
@@ -68,6 +78,6 @@ describe('JwtAuthGuard', () => {
       getClass: () => null,
     } as never;
     await guard.canActivate(ctx);
-    expect((req as never & { user: { id: string } }).user.id).toBe('u1');
+    expect((req as { user: { id: string } }).user.id).toBe('u1');
   });
 });

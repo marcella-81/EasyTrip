@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
 import { INestApplication } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import request from 'supertest';
@@ -16,7 +17,7 @@ describe('History (e2e)', () => {
 
     // Stub RestCountries (evita dependência de rede)
     const countries = app.get(CountriesService);
-    jest.spyOn(countries, 'getByName').mockImplementation(async (name: string) => {
+    jest.spyOn(countries, 'getByName').mockImplementation((name: string) => {
       const n = name.trim();
       return {
         cca2: n.slice(0, 2).toUpperCase(),

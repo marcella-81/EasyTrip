@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { SearchHistoryEntry } from '@easytrip/shared';
 import { SearchHistory } from '@prisma/client';
 import { CountriesService } from '../countries/countries.service';
@@ -19,11 +23,14 @@ export class HistoryService {
       orderBy: { createdAt: 'desc' },
       take: MAX_HISTORY_PER_USER,
     });
-    return rows.map(this.toDTO);
+    return rows.map((r) => this.toDTO(r));
   }
 
-  async addFromQuery(userId: string, query: string): Promise<SearchHistoryEntry> {
-    const country = await this.countries.getByName(query);
+  async addFromQuery(
+    userId: string,
+    query: string,
+  ): Promise<SearchHistoryEntry> {
+    const country = this.countries.getByName(query);
     await this.prisma.searchHistory.deleteMany({
       where: { userId, cca2: country.cca2 },
     });
@@ -39,7 +46,10 @@ export class HistoryService {
     return this.toDTO(created);
   }
 
-  async addBulk(userId: string, queries: string[]): Promise<SearchHistoryEntry[]> {
+  async addBulk(
+    userId: string,
+    queries: string[],
+  ): Promise<SearchHistoryEntry[]> {
     const created: SearchHistoryEntry[] = [];
     const seen = new Set<string>();
     for (const raw of queries) {
@@ -77,7 +87,9 @@ export class HistoryService {
     });
     const stale = rows.slice(MAX_HISTORY_PER_USER).map((r) => r.id);
     if (stale.length > 0) {
-      await this.prisma.searchHistory.deleteMany({ where: { id: { in: stale } } });
+      await this.prisma.searchHistory.deleteMany({
+        where: { id: { in: stale } },
+      });
     }
   }
 

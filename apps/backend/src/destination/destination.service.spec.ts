@@ -22,10 +22,16 @@ describe('DestinationService', () => {
   const exchange = { moedaOrigem: 'JPY', cotacaoEmBRL: '1 JPY = R$ 0.03' };
 
   function makeService() {
-    const country = { getCountryInfo: jest.fn().mockResolvedValue(countryInfo) };
+    const country = {
+      getCountryInfo: jest.fn().mockReturnValue(countryInfo),
+    };
     const weatherSvc = { getWeather: jest.fn().mockResolvedValue(weather) };
     const exchangeSvc = { convertToBRL: jest.fn().mockResolvedValue(exchange) };
-    const svc = new DestinationService(country as never, weatherSvc as never, exchangeSvc as never);
+    const svc = new DestinationService(
+      country as never,
+      weatherSvc as never,
+      exchangeSvc as never,
+    );
     return { svc, country, weatherSvc, exchangeSvc };
   }
 
@@ -55,7 +61,9 @@ describe('DestinationService', () => {
 
   it('propaga erro do countryService', async () => {
     const { svc, country } = makeService();
-    country.getCountryInfo.mockRejectedValue(new Error('not found'));
+    country.getCountryInfo.mockImplementation(() => {
+      throw new Error('not found');
+    });
     await expect(svc.getDestination('Unknown')).rejects.toThrow('not found');
   });
 });

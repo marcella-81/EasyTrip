@@ -1,7 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { ConflictException } from '@nestjs/common';
 import { VisitedService } from './visited.service';
 
-function makeRow(overrides: Partial<{ id: string; cca2: string; countryName: string; continent: string }> = {}) {
+function makeRow(
+  overrides: Partial<{
+    id: string;
+    cca2: string;
+    countryName: string;
+    continent: string;
+  }> = {},
+) {
   return {
     id: overrides.id ?? 'v1',
     userId: 'u1',
@@ -55,9 +63,15 @@ describe('VisitedService', () => {
   describe('add', () => {
     it('cria com cca2 uppercase e retorna DTO', async () => {
       prisma.visitedCountry.create.mockResolvedValue(makeRow({ cca2: 'JP' }));
-      const res = await svc.add('u1', { cca2: 'jp', countryName: 'Japan', continent: 'Asia' });
+      const res = await svc.add('u1', {
+        cca2: 'jp',
+        countryName: 'Japan',
+        continent: 'Asia',
+      });
       expect(prisma.visitedCountry.create).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ cca2: 'JP' }) }),
+        expect.objectContaining({
+          data: expect.objectContaining({ cca2: 'JP' }),
+        }),
       );
       expect(res.cca2).toBe('JP');
     });

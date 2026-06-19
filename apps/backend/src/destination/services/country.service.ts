@@ -5,8 +5,8 @@ import { CountriesService } from '../../countries/countries.service';
 export class CountryService {
   constructor(private readonly countries: CountriesService) {}
 
-  async getCountryInfo(countryName: string) {
-    const country = await this.countries.getByName(countryName);
+  getCountryInfo(countryName: string) {
+    const country = this.countries.getByName(countryName);
     if (!country) {
       throw new NotFoundException(`País "${countryName}" não encontrado.`);
     }
@@ -14,7 +14,7 @@ export class CountryService {
     const currency = country.currencyDetails[0];
     const moeda = currency
       ? `${currency.name} (${currency.symbol})`
-      : country.currencies[0] ?? 'N/A';
+      : (country.currencies[0] ?? 'N/A');
 
     return {
       capital: country.capital || country.name,

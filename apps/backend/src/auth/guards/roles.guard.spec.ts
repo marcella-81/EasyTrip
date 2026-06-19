@@ -1,4 +1,8 @@
-import { ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import {
+  ExecutionContext,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { RolesGuard } from './roles.guard';
@@ -21,7 +25,7 @@ describe('RolesGuard', () => {
 
   beforeEach(() => {
     (jwt.verify as jest.Mock).mockReset();
-    (users.findById as jest.Mock).mockReset();
+    users.findById.mockReset();
   });
 
   it('401 sem token', async () => {
